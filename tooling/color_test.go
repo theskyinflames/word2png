@@ -18,3 +18,11 @@ func TestString2Color(t *testing.T) {
 		require.Equal(t, myString, StringFromColor)
 	}
 }
+
+func TestColorsPalette(t *testing.T) {
+	p := tooling.ColorsSource()
+	for _, c := range p {
+		require.NotEqual(t, tooling.BlackColor, c)
+		require.NotEqual(t, tooling.WhiteColor, c)
+	}
+}
