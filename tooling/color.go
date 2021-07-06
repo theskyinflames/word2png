@@ -78,16 +78,14 @@ func createMaskFromSeed(seed string) []int8 {
 	return bytes2bits(hasher.Sum(nil))
 }
 
-// https://stackoverflow.com/questions/52811744/extract-bits-into-a-int-slice-from-byte-slice
+// Taken from https://stackoverflow.com/questions/52811744/extract-bits-into-a-int-slice-from-byte-slice
 func bytes2bits(data []byte) []int8 {
 	r := make([]int8, len(data)*8)
-
 	for i, b := range data {
 		for j := 0; j < 8; j++ {
 			r[i*8+j] = int8(b >> uint(7-j) & 0x01)
 		}
 	}
-
 	return r
 }
 

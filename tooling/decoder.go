@@ -7,8 +7,19 @@ import (
 	"image/color"
 )
 
+type Decoder struct {
+	c2r map[color.Color]rune
+}
+
+func NewDecoder(seed string, c2rMapper Rune2ColorMapper) Decoder {
+	_, c2r := c2rMapper(seed)
+	return Decoder{
+		c2r: c2r,
+	}
+}
+
 // Decode decodes the words inside a given image to its string form
-func Decode(coded []byte, c2r map[color.Color]rune) ([]string, error) {
+func (d Decoder) Decode(coded []byte) ([]string, error) {
 	buff := &bytes.Buffer{}
 	buff.Write(coded)
 	img, _, err := image.Decode(buff)
@@ -18,54 +29,54 @@ func Decode(coded []byte, c2r map[color.Color]rune) ([]string, error) {
 
 	w := img.Bounds().Max.X
 	h := img.Bounds().Max.Y
-	words := []string{}
+	readWords := []string{}
 
-	fmt.Println("reading...")
+	// Reading the coded image.
+	// The goal here is to read the
+	// coded words inside the image.
+	// Each word is delimited with a black colored pixel.
 	for y := 0; y < h; y++ {
-		var currentWord []color.Color
+		var readingWord []color.Color
 		readingAWord := false
 
 		for x := 0; x < w; x++ {
 			c := img.At(x, y)
-
-			if c == BlackColor && !readingAWord {
+			switch {
+			case c == BlackColor && !readingAWord:
 				// starting word reading
 				readingAWord = true
-				currentWord = []color.Color{}
+				readingWord = []color.Color{}
 				continue
-			}
 
-			if c == BlackColor && readingAWord {
+			case c == BlackColor && readingAWord:
 				// finishing word reading
-				currentWord = append(currentWord, c)
-				w, err := Colors2Word(currentWord, c2r)
+				readingWord = append(readingWord, c)
+				wordFromColors, err := d.Colors2Word(readingWord)
 				if err != nil {
 					return nil, err
 				}
-				words = append(words, w)
+				readWords = append(readWords, wordFromColors)
 				readingAWord = false
 				continue
-			}
 
-			if readingAWord {
-				// read a new letter of the word
-				currentWord = append(currentWord, c)
+			case readingAWord:
+				// read a new letter of the reading word
+				readingWord = append(readingWord, c)
 			}
 		}
 	}
-
-	return words, nil
+	return readWords, nil
 }
 
 var ErrMsgNoRuneForColor = "no rune for the color %s"
 
-func Colors2Word(colors []color.Color, c2r map[color.Color]rune) (string, error) {
+func (d Decoder) Colors2Word(colors []color.Color) (string, error) {
 	w := []rune{}
 	for _, color := range colors {
 		if color == BlackColor {
 			continue
 		}
-		r, ok := c2r[color]
+		r, ok := d.c2r[color]
 		if !ok {
 			return "", fmt.Errorf(ErrMsgNoRuneForColor, fmt.Sprint(color))
 		}

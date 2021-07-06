@@ -27,7 +27,13 @@ func TestColors2Word(t *testing.T) {
 		colors = []color.Color{r2c['b'], r2c['i'], r2c['r'], r2c['d']}
 	)
 
-	decoded, err := tooling.Colors2Word(colors, c2r)
+	c2rMapper := func(seed string) (map[rune]color.Color, map[color.Color]rune) {
+		return r2c, c2r
+	}
+
+	decoder := tooling.NewDecoder("", c2rMapper)
+
+	decoded, err := decoder.Colors2Word(colors)
 	require.NoError(t, err)
 	require.Equal(t, word, decoded)
 }

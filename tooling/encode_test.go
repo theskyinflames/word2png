@@ -28,16 +28,21 @@ func TestLongestWord(t *testing.T) {
 
 func TestWords2Colors(t *testing.T) {
 	var (
-		r2p         = make(map[rune]color.Color)
+		r2c         = make(map[rune]color.Color)
 		firstString = 0
 		lastString  = 127
 	)
 
 	for i := firstString; i < lastString; i++ {
-		r2p[rune(i)] = tooling.ColorsTable[i]
+		r2c[rune(i)] = tooling.ColorsTable[i]
 	}
 
-	w2p, err := tooling.Words2colors(words, r2p)
+	r2cMapper := func(seed string) (map[rune]color.Color, map[color.Color]rune) {
+		return r2c, nil
+	}
+
+	encoder := tooling.NewEncoder("", r2cMapper)
+	w2p, err := encoder.Words2colors(words)
 	require.NoError(t, err)
 
 	require.Len(t, w2p, len(words))
@@ -48,7 +53,6 @@ func TestWords2Colors(t *testing.T) {
 		require.Equal(t, tooling.BlackColor, colors[len(colors)-1])
 	}
 
-	delete(r2p, rune('b'))
-	_, err = tooling.Words2colors(words, r2p)
-	require.EqualError(t, err, fmt.Errorf(tooling.ErrMsgNoColorForRune, rune('b')).Error())
+	_, err = encoder.Words2colors([]string{"Ç"})
+	require.EqualError(t, err, fmt.Errorf(tooling.ErrMsgNoColorForRune, rune('Ç')).Error())
 }

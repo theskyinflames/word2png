@@ -9,10 +9,23 @@ import (
 	"image/png"
 )
 
+type Encoder struct {
+	r2c map[rune]color.Color
+}
+
+type Rune2ColorMapper func(seed string) (map[rune]color.Color, map[color.Color]rune)
+
+func NewEncoder(seed string, r2cMapper Rune2ColorMapper) Encoder {
+	r2c, _ := r2cMapper(seed)
+	return Encoder{
+		r2c: r2c,
+	}
+}
+
 var errMsgNoColorsForWord = "no colors for the word %s"
 
 // Encode encodes a list of words in an image based on the rune-2-color slice
-func Encode(words []string, r2c map[rune]color.Color) ([]byte, error) {
+func (e Encoder) Encode(words []string) ([]byte, error) {
 	longestWord := LongestWord(words) + 2 // BlackColor as a mark of start/end of the word
 
 	// Image to encode the words into it
@@ -29,7 +42,7 @@ func Encode(words []string, r2c map[rune]color.Color) ([]byte, error) {
 	}
 
 	// Add words to the image
-	w2c, err := Words2colors(words, r2c)
+	w2c, err := e.Words2colors(words)
 	if err != nil {
 		return nil, err
 	}
@@ -63,13 +76,13 @@ func LongestWord(words []string) int {
 var ErrMsgNoColorForRune = "no color for the string %d"
 
 // Words2colors return for each word, its representation as an array of colors
-func Words2colors(words []string, r2p map[rune]color.Color) (map[string][]color.Color, error) {
+func (e Encoder) Words2colors(words []string) (map[string][]color.Color, error) {
 	m := make(map[string][]color.Color)
 	for _, word := range words {
 		m[word] = []color.Color{}
 		m[word] = append(m[word], BlackColor)
 		for _, r := range word {
-			color, ok := r2p[r]
+			color, ok := e.r2c[r]
 			if !ok {
 				return nil, fmt.Errorf(ErrMsgNoColorForRune, r)
 			}
