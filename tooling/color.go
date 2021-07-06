@@ -8,8 +8,8 @@ import (
 )
 
 var (
-	ColorsTable = palette.WebSafe
-	whiteColor  = palette.WebSafe[len(palette.WebSafe)-1]
+	ColorsTable = ColorsSource()
+	WhiteColor  = palette.WebSafe[len(palette.WebSafe)-1]
 	BlackColor  = palette.WebSafe[0]
 )
 
@@ -45,15 +45,16 @@ var (
 //			* []color.Color[t]->f
 //			...
 func Rune2Color(seed string) (map[rune]color.Color, map[color.Color]rune) {
-	const numStrings = 128
-
-	mask := createMaskFromSeed(seed)[:numStrings]
+	// MD5 checksum provides an 128 bits lengh signature
+	// So if we want to pair each rune to a color using
+	// the MD5 checksum mask of the seed as mapper.
+	md5BinaryMask := createMaskFromSeed(seed)
 
 	head := make([]rune, 0)
 	tail := make([]rune, 0)
-	for i := range mask {
+	for i := range md5BinaryMask {
 		r := rune(i)
-		if mask[i] == 0 {
+		if md5BinaryMask[i] == 0 {
 			head = append(head, r)
 		} else {
 			tail = append(tail, r)
@@ -78,19 +79,6 @@ func createMaskFromSeed(seed string) []int8 {
 	return bytes2bits(hasher.Sum(nil))
 }
 
-// https://stackoverflow.com/questions/52811744/extract-bits-into-a-int-slice-from-byte-slice
-func bytes2bits(data []byte) []int8 {
-	r := make([]int8, len(data)*8)
-
-	for i, b := range data {
-		for j := 0; j < 8; j++ {
-			r[i*8+j] = int8(b >> uint(7-j) & 0x01)
-		}
-	}
-
-	return r
-}
-
 func SaveEncodedImage(encodedImage []byte, path string) error {
 	f, err := os.Create(path)
 	if err != nil {
@@ -101,4 +89,10 @@ func SaveEncodedImage(encodedImage []byte, path string) error {
 		return err
 	}
 	return f.Close()
+}
+
+func ColorsSource() []color.Color {
+	// We do not use the black nor white colors to encode runes
+	p := palette.WebSafe[1:]
+	return p[:len(p)-1]
 }

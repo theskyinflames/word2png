@@ -1,6 +1,8 @@
 package tooling_test
 
 import (
+	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -8,17 +10,33 @@ import (
 )
 
 func TestEncodingDecoding(t *testing.T) {
-	seed := "I'm glad to meet you in this dark times."
+	const (
+		seed     = "I'm glad to meet you in this dark times."
+		filePath = "./result.png"
+	)
 
 	// encoding
-	r2c, _ := tooling.Rune2Color(seed)
-	encodedImage, err := tooling.Encode(words, r2c)
+	encoder := tooling.NewEncoder(seed, tooling.Rune2Color)
+	encodedImage, err := encoder.Encode(words)
 	require.NoError(t, err)
 	require.NotEmpty(t, encodedImage)
 
+	f, err := os.Create(filePath)
+	require.NoError(t, err)
+	_, err = f.Write(encodedImage)
+	require.NoError(t, err)
+	require.NoError(t, f.Close())
+
+	// comment this if you want to keep the png image
+	defer func() {
+		require.NoError(t, os.Remove(filePath))
+	}()
+
 	// decoding
-	_, c2r := tooling.Rune2Color(seed)
-	decodedWords, err := tooling.Decode(encodedImage, c2r)
+	encodedImage, err = ioutil.ReadFile(filePath)
+	require.NoError(t, err)
+	decoder := tooling.NewDecoder(seed, tooling.Rune2Color)
+	decodedWords, err := decoder.Decode(encodedImage)
 	require.NoError(t, err)
 	require.Equal(t, len(decodedWords), len(words))
 	require.ElementsMatch(t, words, decodedWords)

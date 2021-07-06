@@ -10,24 +10,43 @@ import (
 
 func TestColors2Word(t *testing.T) {
 	var (
-		r2c       = make(map[rune]color.Color)
-		c2r       = make(map[color.Color]rune)
-		firstRune = 0
-		lastRune  = 127
+		words     = [][]byte{[]byte("birdÑÇ 你"), []byte("barcelona1"), []byte("sevilla")}
+		firstSeed = "mySeed"
 	)
 
-	for i := firstRune; i < lastRune; i++ {
-		color := tooling.ColorsTable[i]
-		r2c[rune(i)] = color
-		c2r[color] = rune(i)
+	r2c, c2r := tooling.Rune2Color(firstSeed)
+
+	c2rMapper := func(seed string) (map[rune]color.Color, map[color.Color]rune) {
+		return r2c, c2r
 	}
 
-	var (
-		word   = "bird"
-		colors = []color.Color{r2c['b'], r2c['i'], r2c['r'], r2c['d']}
-	)
+	// Crypt - decrypt cycle
+	cryptedWords := make([][]byte, len(words))
+	seeds := []string{firstSeed}
+	for i := range words {
+		cryptedWords[i] = tooling.Encrypt(words[i], seeds[i])
+		seeds = append(seeds, string(cryptedWords[i]))
+	}
+	for i := range words {
+		decrypted := tooling.Decrypt(cryptedWords[i], seeds[i])
+		require.Equal(t, words[i], decrypted)
+	}
 
-	decoded, err := tooling.Colors2Word(colors, c2r)
-	require.NoError(t, err)
-	require.Equal(t, word, decoded)
+	// Decode from colors
+	decoder := tooling.NewDecoder(firstSeed, c2rMapper)
+	for i, cw := range cryptedWords {
+		// build the colors array for the crypted word
+		colors := []color.Color{}
+		for _, b := range cw {
+			high, low := tooling.SplitByte(b)
+			colors = append(colors, r2c[rune(high)])
+			colors = append(colors, r2c[rune(low)])
+		}
+		// decode the color to word, decrypting it using its seed
+		cryptedWord, err := decoder.Colors2CryptedWord(colors)
+		decoded := tooling.Decrypt(cryptedWord, seeds[i])
+
+		require.NoError(t, err)
+		require.Equal(t, string(words[i]), string(decoded))
+	}
 }
