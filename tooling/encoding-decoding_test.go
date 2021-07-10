@@ -25,6 +25,12 @@ func TestEncodingDecoding(t *testing.T) {
 	require.NoError(t, err)
 	_, err = f.Write(encodedImage)
 	require.NoError(t, err)
+	require.NoError(t, f.Close())
+
+	// comment this if you want to keep the png image
+	defer func() {
+		require.NoError(t, os.Remove(filePath))
+	}()
 
 	// decoding
 	encodedImage, err = ioutil.ReadFile(filePath)

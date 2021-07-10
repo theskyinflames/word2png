@@ -17,7 +17,13 @@ func main() {
 	)
 	kingpin.Parse()
 
-	encoder := tooling.NewEncoder(*seed, tooling.Rune2Color)
+	debugFile, err := os.Create("./encrypted-bytes.txt")
+	exitIfError(err)
+	defer func() {
+		debugFile.Close()
+	}()
+
+	encoder := tooling.NewEncoder(*seed, tooling.Rune2Color, tooling.EncoderDebugWriterOpt(debugFile))
 	b, err := encoder.Encode(*words)
 	exitIfError(err)
 

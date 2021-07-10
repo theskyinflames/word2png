@@ -47,8 +47,7 @@ var (
 func Rune2Color(seed string) (map[rune]color.Color, map[color.Color]rune) {
 	// MD5 checksum provides an 128 bits lengh signature
 	// So if we want to pair each rune to a color using
-	// the MD5 checksum mask of the seed as mapper,
-	// we must limit the number of characters to 128, which is the ASCII table
+	// the MD5 checksum mask of the seed as mapper.
 	md5BinaryMask := createMaskFromSeed(seed)
 
 	head := make([]rune, 0)

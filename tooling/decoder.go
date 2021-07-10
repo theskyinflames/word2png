@@ -6,20 +6,35 @@ import (
 	"fmt"
 	"image/color"
 	"image/png"
-	"os"
+	"io"
 )
 
+type DecoderOption func(*Decoder)
+
 type Decoder struct {
-	c2r        map[color.Color]rune
-	passphrase string
+	c2r         map[color.Color]rune
+	passphrase  string
+	debugWriter io.Writer
 }
 
-func NewDecoder(passphrase string, c2rMapper Rune2ColorMapper) Decoder {
+func DecodeDebugWriterOpt(dw io.Writer) DecoderOption {
+	return func(d *Decoder) {
+		d.debugWriter = dw
+	}
+}
+
+func NewDecoder(passphrase string, c2rMapper Rune2ColorMapper, opts ...DecoderOption) Decoder {
 	_, c2r := c2rMapper(passphrase)
-	return Decoder{
+	d := Decoder{
 		c2r:        c2r,
 		passphrase: passphrase,
 	}
+
+	for _, opt := range opts {
+		opt(&d)
+	}
+
+	return d
 }
 
 // Decode decodes the words inside a given image to its string form.
@@ -31,12 +46,6 @@ func (d Decoder) Decode(coded []byte) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	f, err := os.Create("decode-bytes.txt")
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
 
 	readWords := []string{}
 
@@ -50,7 +59,9 @@ func (d Decoder) Decode(coded []byte) ([]string, error) {
 	for y := img.Bounds().Min.Y; y < img.Bounds().Max.Y; y++ {
 		var readingWord []color.Color
 
-		f.Write([]byte(fmt.Sprintf("\nword: %d \n", y)))
+		if d.debugWriter != nil {
+			d.debugWriter.Write([]byte(fmt.Sprintf("\nword: %d \n", y)))
+		}
 
 	nextword:
 		// Each 2 colors are the high and low parts of the crypted byte
@@ -61,16 +72,16 @@ func (d Decoder) Decode(coded []byte) ([]string, error) {
 				return nil, errors.New("nil color not allowed")
 			case BlackColor:
 				// finishing word reading
-				cryptedWord, err := d.Colors2CryptedWord(readingWord, f)
+				encryptedWord, err := d.Colors2CryptedWord(readingWord)
 				if err != nil {
 					return nil, err
 				}
 
-				w := Decrypt(cryptedWord, string(passphrase))
+				w := Decrypt(encryptedWord, string(passphrase))
 				readWords = append(readWords, string(w))
 
 				// setting the seed to decrypt next word
-				passphrase = cryptedWord
+				passphrase = encryptedWord
 
 				break nextword
 			default:
@@ -84,7 +95,7 @@ func (d Decoder) Decode(coded []byte) ([]string, error) {
 var ErrMsgNoRuneForColor = "no rune for the color %s"
 
 // Colors2CryptedWord translates the array of colors to the original word
-func (d Decoder) Colors2CryptedWord(colors []color.Color, f ...*os.File) ([]byte, error) {
+func (d Decoder) Colors2CryptedWord(colors []color.Color) ([]byte, error) {
 	// Each 2 Colors is equivalent to the high and low parts of the
 	// byte that belongs to the cripted form of the original word.
 	// So, first we need to rebuild each byte by join its high and low parts.
@@ -108,13 +119,13 @@ func (d Decoder) Colors2CryptedWord(colors []color.Color, f ...*os.File) ([]byte
 		cryptedWord = append(cryptedWord, originalByte)
 	}
 
-	// Decrypt
-	if f != nil {
+	if d.debugWriter != nil {
 		for _, cw := range cryptedWord {
 			cHigh, cLow := SplitByte(cw)
-			f[0].Write([]byte(fmt.Sprintf("%08b, %08b - %08b\n", cw, cHigh, cLow)))
+			d.debugWriter.Write([]byte(fmt.Sprintf("%08b, %08b - %08b\n", cw, cHigh, cLow)))
 		}
 	}
 
+	// Decrypt
 	return cryptedWord, nil
 }

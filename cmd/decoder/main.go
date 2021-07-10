@@ -34,7 +34,13 @@ func main() {
 		exitIfError(err)
 	}
 
-	decoder := tooling.NewDecoder(*seed, tooling.Rune2Color)
+	debugFile, err := os.Create("./decrypted-bytes.txt")
+	exitIfError(err)
+	defer func() {
+		debugFile.Close()
+	}()
+
+	decoder := tooling.NewDecoder(*seed, tooling.Rune2Color, tooling.DecodeDebugWriterOpt(debugFile))
 	words, err := decoder.Decode(buff)
 	exitIfError(err)
 

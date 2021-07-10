@@ -21,6 +21,8 @@ var words = []string{
 	"laptop",
 	"glass",
 	"grass",
+	"čÇÑñ",
+	"birdÑÇ 你",
 }
 
 func TestWords2Colors(t *testing.T) {
