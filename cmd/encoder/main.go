@@ -29,7 +29,7 @@ func main() {
 
 	switch {
 	case file != nil && *file != "":
-		tooling.SaveEncodedImage(b, *file)
+		exitIfError(tooling.SaveEncodedImage(b, *file))
 	default:
 		b64Encoder := base64.NewEncoder(base64.StdEncoding, os.Stdout)
 		_, err = b64Encoder.Write(b)

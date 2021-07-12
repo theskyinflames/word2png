@@ -9,20 +9,24 @@ import (
 	"io"
 )
 
+// DecoderOption a constructor option
 type DecoderOption func(*Decoder)
 
+// Decoder decodes encoded words in a PNG image
 type Decoder struct {
 	c2r         map[color.Color]rune
 	passphrase  string
 	debugWriter io.Writer
 }
 
+// DecodeDebugWriterOpt provides an output for debug messages
 func DecodeDebugWriterOpt(dw io.Writer) DecoderOption {
 	return func(d *Decoder) {
 		d.debugWriter = dw
 	}
 }
 
+// NewDecoder is a constructor
 func NewDecoder(passphrase string, c2rMapper Rune2ColorMapper, opts ...DecoderOption) Decoder {
 	_, c2r := c2rMapper(passphrase)
 	d := Decoder{
@@ -60,7 +64,7 @@ func (d Decoder) Decode(coded []byte) ([]string, error) {
 		var readingWord []color.Color
 
 		if d.debugWriter != nil {
-			d.debugWriter.Write([]byte(fmt.Sprintf("\nword: %d \n", y)))
+			_, _ = d.debugWriter.Write([]byte(fmt.Sprintf("\nword: %d \n", y)))
 		}
 
 	nextword:
@@ -92,6 +96,7 @@ func (d Decoder) Decode(coded []byte) ([]string, error) {
 	return readWords, nil
 }
 
+// ErrMsgNoRuneForColor is self described
 var ErrMsgNoRuneForColor = "no rune for the color %s"
 
 // Colors2CryptedWord translates the array of colors to the original word
@@ -105,7 +110,7 @@ func (d Decoder) Colors2CryptedWord(colors []color.Color) ([]byte, error) {
 
 	// Rebuild the crypted form of the word
 	cryptedWord := []byte{}
-	for i := 0; i < len(colors); i = i + 2 {
+	for i := 0; i < len(colors); i += 2 {
 		cHigh, ok := d.c2r[colors[i]]
 		if !ok {
 			return nil, fmt.Errorf(ErrMsgNoRuneForColor, fmt.Sprintf("%#v", cHigh))
@@ -122,10 +127,10 @@ func (d Decoder) Colors2CryptedWord(colors []color.Color) ([]byte, error) {
 	if d.debugWriter != nil {
 		for _, cw := range cryptedWord {
 			cHigh, cLow := SplitByte(cw)
-			d.debugWriter.Write([]byte(fmt.Sprintf("%08b, %08b - %08b\n", cw, cHigh, cLow)))
+			_, _ = d.debugWriter.Write([]byte(fmt.Sprintf("%08b, %08b - %08b\n", cw, cHigh, cLow)))
 		}
 	}
 
-	// Decrypt
+	// decrypt
 	return cryptedWord, nil
 }

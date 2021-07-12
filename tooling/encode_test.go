@@ -31,7 +31,6 @@ func TestWords2Colors(t *testing.T) {
 	require.NoError(t, err)
 
 	// TODO See how to calculte the lengh in bytes for each crypted word
-	//require.Len(t, w2p, len(words))
 	for _, colors := range w2c {
 		blanks := 0
 		for _, c := range colors {
@@ -44,7 +43,6 @@ func TestWords2Colors(t *testing.T) {
 
 		// the pixel's array forma of a word is started and ended by a black pixel
 		// TODO See how to calculte the lengh in bytes for each crypted word
-		//require.Equal(t, len(word)+2, len(colors))
 		require.Equal(t, tooling.BlackColor, colors[len(colors)-1])
 	}
 

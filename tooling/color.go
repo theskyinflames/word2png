@@ -79,6 +79,7 @@ func createMaskFromSeed(seed string) []int8 {
 	return bytes2bits(hasher.Sum(nil))
 }
 
+// SaveEncodedImage is self described
 func SaveEncodedImage(encodedImage []byte, path string) error {
 	f, err := os.Create(path)
 	if err != nil {
@@ -91,6 +92,7 @@ func SaveEncodedImage(encodedImage []byte, path string) error {
 	return f.Close()
 }
 
+// ColorSource return the palette of colors used to encode words
 func ColorsSource() []color.Color {
 	// We do not use the black nor white colors to encode runes
 	p := palette.WebSafe[1:]

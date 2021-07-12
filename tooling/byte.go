@@ -8,6 +8,7 @@ func SplitByte(b byte) (high byte, low byte) {
 	return
 }
 
+// JoinByte takes high and low parts and join them in a byte
 func JoinByte(high, low byte) (originalByte byte) {
 	return high<<4 | low
 }

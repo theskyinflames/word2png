@@ -39,8 +39,7 @@ func TestColors2Word(t *testing.T) {
 		colors := []color.Color{}
 		for _, b := range cw {
 			high, low := tooling.SplitByte(b)
-			colors = append(colors, r2c[rune(high)])
-			colors = append(colors, r2c[rune(low)])
+			colors = append(colors, r2c[rune(high)], r2c[rune(low)])
 		}
 		// decode the color to word, decrypting it using its seed
 		cryptedWord, err := decoder.Colors2CryptedWord(colors)
