@@ -14,14 +14,20 @@ func main() {
 		file  = kingpin.Flag("file", "Save to the especified file if it's filled").Short('f').String()
 		seed  = kingpin.Flag("seed", "coding seed").Short('s').Required().String()
 		words = kingpin.Flag("words", "list of words to encode").Short('w').Strings()
+		debug = kingpin.Flag("debug", "writes a debug file").Short('d').Bool()
+
+		debugFile *os.File
+		err       error
 	)
 	kingpin.Parse()
 
-	debugFile, err := os.Create("./encrypted-bytes.txt")
-	exitIfError(err)
-	defer func() {
-		debugFile.Close()
-	}()
+	if debug != nil && *debug {
+		debugFile, err = os.Create("./encrypted-bytes.txt")
+		exitIfError(err)
+		defer func() {
+			debugFile.Close()
+		}()
+	}
 
 	encoder := tooling.NewEncoder(*seed, tooling.Rune2Color, tooling.EncoderDebugWriterOpt(debugFile))
 	b, err := encoder.Encode(*words)

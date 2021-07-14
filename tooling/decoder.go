@@ -56,7 +56,7 @@ func (d Decoder) Decode(coded []byte) ([]string, error) {
 	// Reading the coded image.
 	// The goal here is to read the
 	// coded words inside the image.
-	// Each word is delimited with a black colored pixel.
+	// Each word is ended with a black colored pixel.
 	//
 	// There is one word per line of pixels
 	passphrase := []byte(d.passphrase)

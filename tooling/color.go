@@ -32,20 +32,20 @@ var (
 // * Four, building the encoding map f(r)->color.Color . Taking the above slide,
 //     for each string we apply the color which is in the same position with a map.
 //     Taking our before example:
-//  		* b->[]color.Color[x]
-//			* d->[]color.Color[y]
-//          * e->[]color.Color[z]
-//			* f->[]color.Color[t]
+//  		* b->[]color.Color[0]
+//			* d->[]color.Color[1]
+//          * e->[]color.Color[2]
+//			* f->[]color.Color[3]
 //			...
 //
 // * Five, building the decoding map f(color.Color)->r
-//  		* []color.Color[x]->b
-//			* []color.Color[y]->d
-//          * []color.Color[z]->e
-//			* []color.Color[t]->f
+//  		* []color.Color[0]->b
+//			* []color.Color[1]->d
+//          * []color.Color[2]->e
+//			* []color.Color[3]->f
 //			...
 func Rune2Color(seed string) (map[rune]color.Color, map[color.Color]rune) {
-	// MD5 checksum provides an 128 bits lengh signature
+	// MD5 checksum provides an 256 bits lengh signature
 	// So if we want to pair each rune to a color using
 	// the MD5 checksum mask of the seed as mapper.
 	md5BinaryMask := createMaskFromSeed(seed)
@@ -73,6 +73,8 @@ func Rune2Color(seed string) (map[rune]color.Color, map[color.Color]rune) {
 	return rune2color, color2rune
 }
 
+// creteMaskFromSeed returns a 32 byte array
+// which is the MD5 checksum of the seed
 func createMaskFromSeed(seed string) []int8 {
 	hasher := md5.New()
 	hasher.Write([]byte(seed))
