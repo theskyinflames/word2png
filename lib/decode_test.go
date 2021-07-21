@@ -20,21 +20,17 @@ func TestColors2Word(t *testing.T) {
 		return r2c, c2r
 	}
 
-	// Crypt - decrypt cycle
-	cryptedWords := make([][]byte, len(words))
+	// Encrypt the words
+	encryptedWords := make([][]byte, len(words))
 	seeds := []string{firstSeed}
 	for i := range words {
-		cryptedWords[i] = lib.Encrypt(words[i], seeds[i])
-		seeds = append(seeds, string(cryptedWords[i]))
-	}
-	for i := range words {
-		decrypted := lib.Decrypt(cryptedWords[i], seeds[i])
-		require.Equal(t, words[i], decrypted)
+		encryptedWords[i] = lib.Encrypt(words[i], seeds[i])
+		seeds = append(seeds, string(encryptedWords[i]))
 	}
 
 	// Decode from colors
 	decoder := lib.NewDecoder(firstSeed, c2rMapper)
-	for i, cw := range cryptedWords {
+	for i, cw := range encryptedWords {
 		// build the colors array for the crypted word
 		colors := []color.Color{}
 		for _, b := range cw {
