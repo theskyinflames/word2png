@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/theskyinflames/image-coder/tooling"
+	"github.com/theskyinflames/image-coder/lib"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
@@ -29,13 +29,13 @@ func main() {
 		}()
 	}
 
-	encoder := tooling.NewEncoder(*seed, tooling.Rune2Color, tooling.EncoderDebugWriterOpt(debugFile))
+	encoder := lib.NewEncoder(*seed, lib.Rune2Color, lib.EncoderDebugWriterOpt(debugFile))
 	b, err := encoder.Encode(*words)
 	exitIfError(err)
 
 	switch {
 	case file != nil && *file != "":
-		exitIfError(tooling.SaveEncodedImage(b, *file))
+		exitIfError(lib.SaveEncodedImage(b, *file))
 	default:
 		b64Encoder := base64.NewEncoder(base64.StdEncoding, os.Stdout)
 		_, err = b64Encoder.Write(b)

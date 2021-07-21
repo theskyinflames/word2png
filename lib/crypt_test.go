@@ -1,10 +1,10 @@
-package tooling_test
+package lib_test
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/theskyinflames/image-coder/tooling"
+	"github.com/theskyinflames/image-coder/lib"
 )
 
 func TestEncrypDecrypt(t *testing.T) {
@@ -13,8 +13,8 @@ func TestEncrypDecrypt(t *testing.T) {
 		txt  = []byte("Make the force ÇÑ be with you 你")
 	)
 
-	crypted := tooling.Encrypt(txt, seed)
-	decrypted := tooling.Decrypt(crypted, seed)
+	crypted := lib.Encrypt(txt, seed)
+	decrypted := lib.Decrypt(crypted, seed)
 
 	require.Equal(t, txt, decrypted)
 }

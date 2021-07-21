@@ -1,4 +1,4 @@
-package tooling
+package lib
 
 // SplitByte splits a given byte in two other bytes,
 // one with its high bits, and another with its low bits

@@ -1,4 +1,4 @@
-package tooling_test
+package lib_test
 
 import (
 	"io/ioutil"
@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/theskyinflames/image-coder/tooling"
+	"github.com/theskyinflames/image-coder/lib"
 )
 
 func TestEncodingDecoding(t *testing.T) {
@@ -16,7 +16,7 @@ func TestEncodingDecoding(t *testing.T) {
 	)
 
 	// encoding
-	encoder := tooling.NewEncoder(seed, tooling.Rune2Color)
+	encoder := lib.NewEncoder(seed, lib.Rune2Color)
 	encodedImage, err := encoder.Encode(words)
 	require.NoError(t, err)
 	require.NotEmpty(t, encodedImage)
@@ -35,7 +35,7 @@ func TestEncodingDecoding(t *testing.T) {
 	// decoding
 	encodedImage, err = ioutil.ReadFile(filePath)
 	require.NoError(t, err)
-	decoder := tooling.NewDecoder(seed, tooling.Rune2Color)
+	decoder := lib.NewDecoder(seed, lib.Rune2Color)
 	decodedWords, err := decoder.Decode(encodedImage)
 	require.NoError(t, err)
 	require.Equal(t, len(decodedWords), len(words))

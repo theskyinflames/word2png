@@ -1,4 +1,4 @@
-package tooling_test
+package lib_test
 
 import (
 	"bytes"
@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/theskyinflames/image-coder/tooling"
+	"github.com/theskyinflames/image-coder/lib"
 )
 
 var words = []string{
@@ -26,7 +26,7 @@ var words = []string{
 }
 
 func TestWords2Colors(t *testing.T) {
-	encoder := tooling.NewEncoder("", r2cMapperFixture())
+	encoder := lib.NewEncoder("", r2cMapperFixture())
 	w2c, err := encoder.Words2colors(words)
 	require.NoError(t, err)
 
@@ -35,7 +35,7 @@ func TestWords2Colors(t *testing.T) {
 		blanks := 0
 		for _, c := range colors {
 			require.NotNil(t, c)
-			if c == tooling.BlackColor {
+			if c == lib.BlackColor {
 				blanks++
 			}
 		}
@@ -43,7 +43,7 @@ func TestWords2Colors(t *testing.T) {
 
 		// the pixel's array forma of a word is started and ended by a black pixel
 		// TODO See how to calculte the lengh in bytes for each crypted word
-		require.Equal(t, tooling.BlackColor, colors[len(colors)-1])
+		require.Equal(t, lib.BlackColor, colors[len(colors)-1])
 	}
 
 	// We're not limited to ASCII characters
@@ -53,14 +53,14 @@ func TestWords2Colors(t *testing.T) {
 }
 
 func TestEncryptWords(t *testing.T) {
-	e := tooling.NewEncoder("mySeed", r2cMapperFixture())
+	e := lib.NewEncoder("mySeed", r2cMapperFixture())
 	b, err := e.EncryptWords(words)
 	require.NoError(t, err)
 	require.Len(t, b, len(words))
 }
 
 func TestEncode(t *testing.T) {
-	encoder := tooling.NewEncoder("I'm glad to meet you in this dark times.", tooling.Rune2Color)
+	encoder := lib.NewEncoder("I'm glad to meet you in this dark times.", lib.Rune2Color)
 	encodedImage, err := encoder.Encode(words)
 	require.NoError(t, err)
 	require.NotEmpty(t, encodedImage)
@@ -80,22 +80,22 @@ func TestEncode(t *testing.T) {
 			c = img.At(x, y)
 			require.NotNil(t, c) // nil color not allowed
 			switch c {
-			case tooling.BlackColor:
+			case lib.BlackColor:
 				// Only one black color is allowed to mark the end of the word
 				require.Equal(t, 0, blacks)
 				blacks++
-			case tooling.WhiteColor:
+			case lib.WhiteColor:
 				// If the current color is white, then the before one only can be
 				// black or white
 				before := img.At(x-1, y)
-				require.True(t, before == tooling.BlackColor || before == tooling.WhiteColor)
+				require.True(t, before == lib.BlackColor || before == lib.WhiteColor)
 			}
 		}
 		require.Equal(t, 1, blacks) // All words are closed with black color
 	}
 }
 
-func r2cMapperFixture() tooling.Rune2ColorMapper {
+func r2cMapperFixture() lib.Rune2ColorMapper {
 	var (
 		r2c         = make(map[rune]color.Color)
 		firstString = 0
@@ -103,7 +103,7 @@ func r2cMapperFixture() tooling.Rune2ColorMapper {
 	)
 
 	for i := firstString; i < lastString; i++ {
-		r2c[rune(i)] = tooling.ColorsTable[i]
+		r2c[rune(i)] = lib.ColorsTable[i]
 	}
 
 	return func(seed string) (map[rune]color.Color, map[color.Color]rune) {

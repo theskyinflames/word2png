@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/theskyinflames/image-coder/tooling"
+	"github.com/theskyinflames/image-coder/lib"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
@@ -43,7 +43,7 @@ func main() {
 		}()
 	}
 
-	decoder := tooling.NewDecoder(*seed, tooling.Rune2Color, tooling.DecodeDebugWriterOpt(debugFile))
+	decoder := lib.NewDecoder(*seed, lib.Rune2Color, lib.DecodeDebugWriterOpt(debugFile))
 	words, err := decoder.Decode(buff)
 	exitIfError(err)
 
