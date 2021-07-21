@@ -1,8 +1,8 @@
 default: test lint
 
-build:
-	cd cmd/encoder && go build .
-	cd ../decoder && go build .
+install:
+	cd cmd/encoder && go install .
+	cd cmd/decoder && go install .
 
 test:
 	go test -v -race ./...
