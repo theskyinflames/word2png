@@ -41,7 +41,7 @@ func NewDecoder(passphrase string, c2rMapper Rune2ColorMapper, opts ...DecoderOp
 	return d
 }
 
-// Decode decodes the words inside a given image to its string form.
+// Decode decodes the words inside a given image
 // It expects that the image is in PNG format.
 func (d Decoder) Decode(coded []byte) ([]string, error) {
 	buff := &bytes.Buffer{}
@@ -102,13 +102,13 @@ var ErrMsgNoRuneForColor = "no rune for the color %s"
 // Colors2CryptedWord translates the array of colors to the original word
 func (d Decoder) Colors2CryptedWord(colors []color.Color) ([]byte, error) {
 	// Each 2 Colors is equivalent to the high and low parts of the
-	// byte that belongs to the cripted form of the original word.
+	// byte that belongs to the encrypted form of the original word.
 	// So, first we need to rebuild each byte by join its high and low parts.
 	// After that we'll have the bytes array corresponding to the crpted form
 	// of the original word. So, all we'll have to do to get the word is decrypt
 	// this sequence of bytes.
 
-	// Rebuild the crypted form of the word
+	// Rebuild the encrypted form of the word
 	cryptedWord := []byte{}
 	for i := 0; i < len(colors); i += 2 {
 		cHigh, ok := d.c2r[colors[i]]
@@ -131,6 +131,5 @@ func (d Decoder) Colors2CryptedWord(colors []color.Color) ([]byte, error) {
 		}
 	}
 
-	// decrypt
 	return cryptedWord, nil
 }

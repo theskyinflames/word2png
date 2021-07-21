@@ -1,8 +1,8 @@
 default: test lint
 
 install:
-	cd cmd/encoder && go install .
-	cd cmd/decoder && go install .
+	cd cmd/word2png && go install .
+	cd cmd/png2word && go install .
 
 test:
 	go test -v -race ./...

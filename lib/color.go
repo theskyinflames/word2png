@@ -7,29 +7,30 @@ import (
 	"os"
 )
 
+// Color constants
 var (
 	ColorsTable = ColorsSource()
 	WhiteColor  = palette.WebSafe[len(palette.WebSafe)-1]
 	BlackColor  = palette.WebSafe[0]
 )
 
-// Rune2Color returns an bijective function f(rune): color
+// Rune2Color returns an bijective function f(rune)->color
 //
-// The goal here is to have a function that,
-// given a seed provides an unique application to color
-// f(seed,[]string,color.Color[]) :-> unique(r,color.Color)
-// To do that,
-// * first, get the binary mask from the mask
-// * second, create two string slices: head and tail
-// * next, iterate seed mask, for each position:
-//     if there is a '0' in the mask,
-//          the string for this position is added to the tail slice
-//     else, the string for this position is added to the head slice.
-//     At the end, we concatenate head + tail slices
+// The goal here is to have a function that, given a seed,
+// it provides an unique application to color: f(seed,[]string,color.Color[])->[]{r,color.Color}
 //
-//     So, for a mask: "01011101...", we'll end up with an slice like "b,d,e,f,h,....,a,c,g, ...."
+// To achieve that, it follows these steps:
 //
-// * Four, building the encoding map f(r)->color.Color . Taking the above slide,
+// 1. We get the binary mask from the seed
+// 2. Create two string slices: head and tail
+// 3. Iterate binary seed mask, and for each position:
+//     - we take the rune that corresponds to the position number: rune(position)
+//     - if there is a '0' in the mask,
+//          the rune is added to the tail slice
+//       else, the rune is added to the head slice.
+//     - at the end, we concatenate head + tail slices
+//     So, for a seed binary mask "01011101...", we'll end up with an slice like "b,d,e,f,h,....,a,c,g, ...."
+// 4. Building the encoding map f(rune)->color.Color . Taking the above slide,
 //     for each string we apply the color which is in the same position with a map.
 //     Taking our before example:
 //  		* b->[]color.Color[0]
@@ -37,17 +38,13 @@ var (
 //          * e->[]color.Color[2]
 //			* f->[]color.Color[3]
 //			...
-//
-// * Five, building the decoding map f(color.Color)->r
+// 5. Building the decoding map f(color.Color)->r
 //  		* []color.Color[0]->b
 //			* []color.Color[1]->d
 //          * []color.Color[2]->e
 //			* []color.Color[3]->f
 //			...
 func Rune2Color(seed string) (map[rune]color.Color, map[color.Color]rune) {
-	// MD5 checksum provides an 256 bits lengh signature
-	// So if we want to pair each rune to a color using
-	// the MD5 checksum mask of the seed as mapper.
 	md5BinaryMask := createMaskFromSeed(seed)
 
 	head := make([]rune, 0)
@@ -94,7 +91,7 @@ func SaveEncodedImage(encodedImage []byte, path string) error {
 	return f.Close()
 }
 
-// ColorSource return the palette of colors used to encode words
+// ColorsSource return the palette of colors used to encode words
 func ColorsSource() []color.Color {
 	// We do not use the black nor white colors to encode runes
 	p := palette.WebSafe[1:]

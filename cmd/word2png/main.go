@@ -34,7 +34,7 @@ func main() {
 	exitIfError(err)
 
 	switch {
-	case file != nil && *file != "":
+	case *file != "":
 		exitIfError(lib.SaveEncodedImage(b, *file))
 	default:
 		b64Encoder := base64.NewEncoder(base64.StdEncoding, os.Stdout)
