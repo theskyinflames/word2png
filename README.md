@@ -13,30 +13,6 @@ Yes, I know. You can argue that you still have to keep safe the passphrase that 
 ## License
 All this tool is under [GPL V3 license](https://www.gnu.org/licenses/gpl-3.0.txt)
 
-## How it works - Encoding
-First of all, the provided words are encrypted using AES-256 encryption in a *chain* mode. I mean, except for the first word, which is encrypted using the provided passphrase, the rest of the words are encrypted using the previous encrypted word as a passphrase. 
-
-<img src="doc/ic-encryption.png" alt="Words encryption" style="width:400px;background-color:white;padding:10px"/>
-
-It prevents modifying the sequence of words.
-
-Once we have the words encrypted, we need a bijective function to encode the encrypted words in a sequence of colors in the PNG file. But we also want that this relation between each *byte* and its color depended on the passphrase. So if the passphrase changes, this relation will also change. It's achieved by using the MD5 checksum of the passphrase. It is a 128 bytes signature length, or in other words, it allows to encode 128 values into 128 colors. Here, two bijective functions are built, the first one to encode and the second one to decode: 
-
-<img src="doc/bijective.png" alt="Words encryption" style="width:400px;background-color:white;padding:10px"/>
-
-But this function only manages values *0 ≥ V ≤ 2^4*, and each byte to encode can take them from 0 to *2^8*. To fix it, each byte is split into two bytes, one of them with the high part and another one with the low part. For example, a byte *10111001* is split into two bytes: *00001011* (high part) and *00001001* (low part). By doing so, we ensure that all bytes to be encoded to colors will have values in the domain of the bijective function. 
-
-## How it works - decoding
-To decode the sequence of words encoded in a PNG image, it's taken into account that:
-* Each line of pixels is an encoded-word
-* Every two pixels of the same line corresponds to an individual byte of the encrypted form of the word. Remember that it's so because, during the encoding process, each byte is split into two bytes.
-
-So the decoding process consist, basically on:
-1. Read a line of pixels
-2. Decode the byte of each pixel from its color
-3. Combine the bytes in pairs to get the original encrypted form of the word
-4. Decrypt the word
-
 ## Installation
 ```sh
     make install
@@ -64,10 +40,35 @@ To get back the words encoded in the above image, the passphrase is needed:
 
 <img src="doc/decode.png" alt="encoding" style="width:800px;background-color:white;padding:0px"/>
 
+## How it works - Encoding
+First of all, the provided words are encrypted using AES-256 encryption in a *chain* mode. I mean, except for the first word, which is encrypted using the provided passphrase, the rest of the words are encrypted using the previous encrypted word as a passphrase. 
+
+<img src="doc/ic-encryption.png" alt="Words encryption" style="width:400px;background-color:white;padding:10px"/>
+
+It prevents modifying the sequence of words.
+
+Once we have the words encrypted, we need a bijective function to encode the encrypted words in a sequence of colors in the PNG file. But we also want that this relation between each *byte* and its color depended on the passphrase. So if the passphrase changes, this relation will also change. It's achieved by using the MD5 checksum of the passphrase. It is a 128 bytes signature length, or in other words, it allows to encode 128 values into 128 colors. Here, two bijective functions are built, the first one to encode and the second one to decode: 
+
+<img src="doc/bijective.png" alt="Words encryption" style="width:400px;background-color:white;padding:10px"/>
+
+But this function only manages values *0 ≥ V ≤ 2^4*, and each byte to encode can take them from 0 to *2^8*. To fix it, each byte is split into two bytes, one of them with the high part and another one with the low part. For example, a byte *10111001* is split into two bytes: *00001011* (high part) and *00001001* (low part). By doing so, we ensure that all bytes to be encoded to colors will have values in the domain of the bijective function. 
+
+## How it works - decoding
+To decode the sequence of words encoded in a PNG image, it's taken into account that:
+* Each line of pixels is an encoded-word
+* Every two pixels of the same line corresponds to an individual byte of the encrypted form of the word. Remember that it's so because, during the encoding process, each byte is split into two bytes.
+
+So the decoding process consist, basically on:
+1. Read a line of pixels
+2. Decode the byte of each pixel from its color
+3. Combine the bytes in pairs to get the original encrypted form of the word
+4. Decrypt the word
+
 ## TODO
 * Some refactors on the code to make it simpler 
 * Add RSA encryption support
 * Add a GraphQL API
+* Improve debug stream management
 
 ## Disclaimer
 I've coded it only for fun. Please read the LICENSE. I hope you enjoy using it as much as I enjoyed building it. All ideas are welcome. Please let me know what you would add or change.
