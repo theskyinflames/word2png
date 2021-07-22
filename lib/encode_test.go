@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"image/color"
 	"image/png"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -17,6 +19,7 @@ var words = []string{
 	"frog",
 	"cloud",
 	"mouse",
+	"horse", // ensure repeated words support
 	"monitor",
 	"laptop",
 	"glass",
@@ -108,5 +111,14 @@ func r2cMapperFixture() lib.Rune2ColorMapper {
 
 	return func(seed string) (map[rune]color.Color, map[color.Color]rune) {
 		return r2c, nil
+	}
+}
+
+func TestEnumerateWords(t *testing.T) {
+	enumerated := lib.EnumerateWords(words)
+	for i, e := range enumerated {
+		prefix := strconv.Itoa(i) + lib.EnumerateToken
+		require.True(t, strings.HasPrefix(e, prefix))
+		require.Equal(t, words[i], e[len(prefix):])
 	}
 }

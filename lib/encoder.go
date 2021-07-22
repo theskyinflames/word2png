@@ -49,6 +49,9 @@ var errMsgNoColorsForWord = "no colors for the word %s"
 
 // Encode encodes a list of words in an image based on the rune-2-color slice
 func (e Encoder) Encode(words []string) ([]byte, error) {
+	// Enumerate the words to avoid repeated words issue https://github.com/theskyinflames/word2png/issues/1
+	words = EnumerateWords(words)
+
 	w2c, err := e.Words2colors(words)
 	// Add words to the image
 	if err != nil {
@@ -157,4 +160,22 @@ func (e Encoder) Words2colors(words []string) (map[string][]color.Color, error) 
 		m[word] = append(m[word], BlackColor)
 	}
 	return m, nil
+}
+
+// Words sequence enumeration constants
+const (
+	EnumerateToken  = "."
+	EnumerationMask = "%d%s%s"
+)
+
+// EnumerateWords allow encoder to support repeated words
+// Without enumerating the words, Word2Colors method will fail
+// building the map word->[]color
+// View https://github.com/theskyinflames/word2png/issues/1
+func EnumerateWords(words []string) []string {
+	enumerated := make([]string, len(words))
+	for i := range words {
+		enumerated[i] = fmt.Sprintf(EnumerationMask, i, EnumerateToken, words[i])
+	}
+	return enumerated
 }

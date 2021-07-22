@@ -7,6 +7,7 @@ import (
 	"image/color"
 	"image/png"
 	"io"
+	"strings"
 )
 
 // DecoderOption a constructor option
@@ -81,8 +82,9 @@ func (d Decoder) Decode(coded []byte) ([]string, error) {
 					return nil, err
 				}
 
-				w := Decrypt(encryptedWord, string(passphrase))
-				readWords = append(readWords, string(w))
+				enumerated_w := Decrypt(encryptedWord, string(passphrase))
+				w := RemoveEnumerationToken(string(enumerated_w)) // This removes the enumeration added at encoding time
+				readWords = append(readWords, w)
 
 				// setting the seed to decrypt next word
 				passphrase = encryptedWord
@@ -132,4 +134,10 @@ func (d Decoder) Colors2CryptedWord(colors []color.Color) ([]byte, error) {
 	}
 
 	return cryptedWord, nil
+}
+
+// RemoveEnumerationToken is self described
+func RemoveEnumerationToken(word string) string {
+	tokenAt := strings.Index(word, EnumerateToken)
+	return word[tokenAt+1:]
 }

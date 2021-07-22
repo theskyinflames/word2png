@@ -1,6 +1,7 @@
 package lib_test
 
 import (
+	"fmt"
 	"image/color"
 	"testing"
 
@@ -10,7 +11,7 @@ import (
 
 func TestColors2Word(t *testing.T) {
 	var (
-		words     = [][]byte{[]byte("birdÑÇ 你"), []byte("barcelona1"), []byte("sevilla")}
+		words     = [][]byte{[]byte("birdÑÇ 你"), []byte("barcelona1"), []byte("barcelona1"), []byte("sevilla")}
 		firstSeed = "mySeed"
 	)
 
@@ -44,4 +45,10 @@ func TestColors2Word(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, string(words[i]), string(decoded))
 	}
+}
+
+func TestRemoveEnumerationToken(t *testing.T) {
+	word := fmt.Sprintf("%sbar%s%stolo%s%s", lib.EnumerateToken, lib.EnumerateToken, lib.EnumerateToken, lib.EnumerateToken, lib.EnumerateToken)
+	enumerated := fmt.Sprintf(lib.EnumerationMask, 0, lib.EnumerateToken, word)
+	require.Equal(t, word, lib.RemoveEnumerationToken(enumerated))
 }
