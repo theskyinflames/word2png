@@ -22,7 +22,7 @@ This will install two binaries:
 * *png2word* : The decoder
 
 ## Usage
-First, we encode a sequence of words into a PNG image. Next we decode this PNG image to get back before the sequence of words.
+First, we encode a sequence of words into a PNG image. Next we decode this PNG image to get back the sequence of words.
 
 Although this tool is intended to get a PNG image as the encoding result, you also can get it in Base64 instead. See *--help* option for encoder/decoder
 
