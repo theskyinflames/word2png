@@ -67,8 +67,8 @@ So the decoding process consist, basically on:
 ## TODO
 * Some refactors on the code to make it simpler 
 * Add RSA encryption support
-* Add a GraphQL API
-* Improve debug stream management
+* Add Github actions to pass tests and linter
+* Improve the debug stream management
 
 ## Disclaimer
 I've coded it only for fun. Please read the LICENSE. I hope you enjoy using it as much as I enjoyed building it. All ideas are welcome. Please let me know what you would add or change.
