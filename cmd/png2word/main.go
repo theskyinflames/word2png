@@ -43,7 +43,8 @@ func main() {
 		}()
 	}
 
-	decoder := lib.NewDecoder(*seed, lib.Rune2Color, lib.DecodeDebugWriterOpt(debugFile))
+	decrypter := lib.NewAES256(*seed)
+	decoder := lib.NewDecoder(lib.Rune2Color(*seed), decrypter, lib.DecodeDebugWriterOpt(debugFile))
 	words, err := decoder.Decode(buff)
 	exitIfError(err)
 

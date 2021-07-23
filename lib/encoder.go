@@ -10,6 +10,12 @@ import (
 	"io"
 )
 
+//go:generate moq -out zmock_encoder_test.go -pkg lib_test . Encrypter
+
+type Encrypter interface {
+	EncryptWords(words []string) ([][]byte, error)
+}
+
 // EncoderOption is a constructor option
 type EncoderOption func(*Encoder)
 
@@ -23,19 +29,19 @@ func EncoderDebugWriterOpt(dw io.Writer) EncoderOption {
 // Encoder encodes a given list of words (or texts) into a PNG image based on a given seed.
 type Encoder struct {
 	r2c         map[rune]color.Color
-	passphrase  string
 	debugWriter io.Writer
+	encrypter   Encrypter
 }
 
 // Rune2ColorMapper maps from a rune to color and viceversa
-type Rune2ColorMapper func(seed string) (map[rune]color.Color, map[color.Color]rune)
+type Rune2ColorMapper func() (map[rune]color.Color, map[color.Color]rune)
 
 // NewEncoder is a constructor
-func NewEncoder(seed string, r2cMapper Rune2ColorMapper, opts ...EncoderOption) Encoder {
-	r2c, _ := r2cMapper(seed)
+func NewEncoder(r2cMapper Rune2ColorMapper, encrypter Encrypter, opts ...EncoderOption) Encoder {
+	r2c, _ := r2cMapper()
 	e := Encoder{
-		r2c:        r2c,
-		passphrase: seed,
+		r2c:       r2c,
+		encrypter: encrypter,
 	}
 
 	for _, opt := range opts {
@@ -100,27 +106,12 @@ func longestWord(words map[string][]color.Color) int {
 	return l
 }
 
-// EncryptWords encrypts a list of words.
-// First word uses the seed provided to the Encoder constructor. But,
-// rest of words use previous encrypted word as seed. So, if the order of
-// words is changed in the final result, they will not can be decrypted.
-func (e Encoder) EncryptWords(words []string) ([][]byte, error) {
-	crypted := make([][]byte, 0)
-	passphrase := []byte(e.passphrase)
-	for _, w := range words {
-		b := Encrypt([]byte(w), string(passphrase))
-		crypted = append(crypted, b)
-		passphrase = b
-	}
-	return crypted, nil
-}
-
 // ErrMsgNoColorForRune is self described
 var ErrMsgNoColorForRune = "no color for the rune %d"
 
 // Words2colors return for each word, its representation as an array of colors
 func (e Encoder) Words2colors(words []string) (map[string][]color.Color, error) {
-	encryptedWords, err := e.EncryptWords(words)
+	encryptedWords, err := e.encrypter.EncryptWords(words)
 	if err != nil {
 		return nil, err
 	}

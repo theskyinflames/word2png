@@ -9,7 +9,7 @@ import (
 
 func TestRune2Color(t *testing.T) {
 	seed := "bartolo"
-	r2c, c2r := lib.Rune2Color(seed)
+	r2c, c2r := lib.Rune2Color(seed)()
 	require.Equal(t, len(r2c), len(c2r))
 
 	for r, c := range r2c {

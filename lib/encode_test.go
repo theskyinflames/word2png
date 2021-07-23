@@ -12,24 +12,8 @@ import (
 	"github.com/theskyinflames/image-coder/lib"
 )
 
-var words = []string{
-	"keyboard",
-	"horse",
-	"berry",
-	"frog",
-	"cloud",
-	"mouse",
-	"horse", // ensure repeated words support
-	"monitor",
-	"laptop",
-	"glass",
-	"grass",
-	"čÇÑñ",
-	"birdÑÇ 你",
-}
-
 func TestWords2Colors(t *testing.T) {
-	encoder := lib.NewEncoder("", r2cMapperFixture())
+	encoder := lib.NewEncoder(r2cMapperFixture(), encrypter)
 	w2c, err := encoder.Words2colors(words)
 	require.NoError(t, err)
 
@@ -55,15 +39,8 @@ func TestWords2Colors(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func TestEncryptWords(t *testing.T) {
-	e := lib.NewEncoder("mySeed", r2cMapperFixture())
-	b, err := e.EncryptWords(words)
-	require.NoError(t, err)
-	require.Len(t, b, len(words))
-}
-
 func TestEncode(t *testing.T) {
-	encoder := lib.NewEncoder("I'm glad to meet you in this dark times.", lib.Rune2Color)
+	encoder := lib.NewEncoder(lib.Rune2Color(seed), encrypter)
 	encodedImage, err := encoder.Encode(words)
 	require.NoError(t, err)
 	require.NotEmpty(t, encodedImage)
@@ -76,6 +53,7 @@ func TestEncode(t *testing.T) {
 	// One line per word
 	require.Equal(t, len(words), img.Bounds().Max.Y-img.Bounds().Min.Y)
 
+	encodedWords := 0
 	for y := img.Bounds().Min.Y; y < img.Bounds().Max.Y; y++ {
 		var c color.Color
 		blacks := 0
@@ -95,7 +73,9 @@ func TestEncode(t *testing.T) {
 			}
 		}
 		require.Equal(t, 1, blacks) // All words are closed with black color
+		encodedWords++
 	}
+	require.Equal(t, len(words), encodedWords)
 }
 
 func r2cMapperFixture() lib.Rune2ColorMapper {
@@ -109,7 +89,7 @@ func r2cMapperFixture() lib.Rune2ColorMapper {
 		r2c[rune(i)] = lib.ColorsTable[i]
 	}
 
-	return func(seed string) (map[rune]color.Color, map[color.Color]rune) {
+	return func() (map[rune]color.Color, map[color.Color]rune) {
 		return r2c, nil
 	}
 }

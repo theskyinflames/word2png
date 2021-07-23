@@ -44,30 +44,32 @@ var (
 //          * []color.Color[2]->e
 //			* []color.Color[3]->f
 //			...
-func Rune2Color(seed string) (map[rune]color.Color, map[color.Color]rune) {
-	md5BinaryMask := createMaskFromSeed(seed)
+func Rune2Color(seed string) Rune2ColorMapper {
+	return func() (map[rune]color.Color, map[color.Color]rune) {
+		md5BinaryMask := createMaskFromSeed(seed)
 
-	head := make([]rune, 0)
-	tail := make([]rune, 0)
-	for i := range md5BinaryMask {
-		r := rune(i)
-		if md5BinaryMask[i] == 0 {
-			head = append(head, r)
-		} else {
-			tail = append(tail, r)
+		head := make([]rune, 0)
+		tail := make([]rune, 0)
+		for i := range md5BinaryMask {
+			r := rune(i)
+			if md5BinaryMask[i] == 0 {
+				head = append(head, r)
+			} else {
+				tail = append(tail, r)
+			}
 		}
-	}
-	masked := append(head, tail...)
-	rune2color := make(map[rune]color.Color)
-	color2rune := make(map[color.Color]rune)
-	for i := range masked {
-		r := masked[i]
-		c := ColorsTable[i]
-		rune2color[r] = c
-		color2rune[c] = r
-	}
+		masked := append(head, tail...)
+		rune2color := make(map[rune]color.Color)
+		color2rune := make(map[color.Color]rune)
+		for i := range masked {
+			r := masked[i]
+			c := ColorsTable[i]
+			rune2color[r] = c
+			color2rune[c] = r
+		}
 
-	return rune2color, color2rune
+		return rune2color, color2rune
+	}
 }
 
 // creteMaskFromSeed returns a 32 byte array

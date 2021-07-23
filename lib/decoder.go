@@ -10,14 +10,21 @@ import (
 	"strings"
 )
 
+//go:generate moq -out zmock_decoder_test.go -pkg lib_test . Decrypter
+
+type Decrypter interface {
+	DecryptWords(encryptedWords [][]byte) ([]string, error)
+}
+
 // DecoderOption a constructor option
 type DecoderOption func(*Decoder)
 
 // Decoder decodes encoded words in a PNG image
 type Decoder struct {
 	c2r         map[color.Color]rune
-	passphrase  string
 	debugWriter io.Writer
+
+	decrypter Decrypter
 }
 
 // DecodeDebugWriterOpt provides an output for debug messages
@@ -28,11 +35,11 @@ func DecodeDebugWriterOpt(dw io.Writer) DecoderOption {
 }
 
 // NewDecoder is a constructor
-func NewDecoder(passphrase string, c2rMapper Rune2ColorMapper, opts ...DecoderOption) Decoder {
-	_, c2r := c2rMapper(passphrase)
+func NewDecoder(c2rMapper Rune2ColorMapper, decrypter Decrypter, opts ...DecoderOption) Decoder {
+	_, c2r := c2rMapper()
 	d := Decoder{
-		c2r:        c2r,
-		passphrase: passphrase,
+		c2r:       c2r,
+		decrypter: decrypter,
 	}
 
 	for _, opt := range opts {
@@ -60,7 +67,7 @@ func (d Decoder) Decode(coded []byte) ([]string, error) {
 	// Each word is ended with a black colored pixel.
 	//
 	// There is one word per line of pixels
-	passphrase := []byte(d.passphrase)
+	encryptedWords := make([][]byte, 0)
 	for y := img.Bounds().Min.Y; y < img.Bounds().Max.Y; y++ {
 		var readingWord []color.Color
 
@@ -81,13 +88,7 @@ func (d Decoder) Decode(coded []byte) ([]string, error) {
 				if err != nil {
 					return nil, err
 				}
-
-				enumerated_w := Decrypt(encryptedWord, string(passphrase))
-				w := RemoveEnumerationToken(string(enumerated_w)) // This removes the enumeration added at encoding time
-				readWords = append(readWords, w)
-
-				// setting the seed to decrypt next word
-				passphrase = encryptedWord
+				encryptedWords = append(encryptedWords, encryptedWord)
 
 				break nextword
 			default:
@@ -95,6 +96,16 @@ func (d Decoder) Decode(coded []byte) ([]string, error) {
 			}
 		}
 	}
+
+	enumeratedWords, err := d.decrypter.DecryptWords(encryptedWords)
+	if err != nil {
+		return nil, err
+	}
+	for _, ew := range enumeratedWords {
+		w := RemoveEnumerationToken(ew) // This removes the enumeration added at encoding time
+		readWords = append(readWords, w)
+	}
+
 	return readWords, nil
 }
 
