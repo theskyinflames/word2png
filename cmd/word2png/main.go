@@ -29,7 +29,7 @@ func main() {
 		}()
 	}
 
-	encoder := lib.NewEncoder(*seed, lib.Rune2Color, lib.EncoderDebugWriterOpt(debugFile))
+	encoder := lib.NewEncoder(lib.Rune2Color(*seed), lib.NewAES256(*seed), lib.EncoderDebugWriterOpt(debugFile))
 	b, err := encoder.Encode(*words)
 	exitIfError(err)
 

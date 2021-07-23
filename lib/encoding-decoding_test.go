@@ -16,7 +16,7 @@ func TestEncodingDecoding(t *testing.T) {
 	)
 
 	// encoding
-	encoder := lib.NewEncoder(seed, lib.Rune2Color)
+	encoder := lib.NewEncoder(lib.Rune2Color(seed), encrypter)
 	encodedImage, err := encoder.Encode(words)
 	require.NoError(t, err)
 	require.NotEmpty(t, encodedImage)
@@ -35,7 +35,7 @@ func TestEncodingDecoding(t *testing.T) {
 	// decoding
 	encodedImage, err = ioutil.ReadFile(filePath)
 	require.NoError(t, err)
-	decoder := lib.NewDecoder(seed, lib.Rune2Color)
+	decoder := lib.NewDecoder(lib.Rune2Color(seed), decrypter)
 	decodedWords, err := decoder.Decode(encodedImage)
 	require.NoError(t, err)
 	require.Equal(t, len(decodedWords), len(words))

@@ -10,27 +10,18 @@ import (
 )
 
 func TestColors2Word(t *testing.T) {
-	var (
-		words     = [][]byte{[]byte("birdÑÇ 你"), []byte("barcelona1"), []byte("barcelona1"), []byte("sevilla")}
-		firstSeed = "mySeed"
-	)
+	r2c, c2r := lib.Rune2Color(seed)()
 
-	r2c, c2r := lib.Rune2Color(firstSeed)
-
-	c2rMapper := func(seed string) (map[rune]color.Color, map[color.Color]rune) {
+	c2rMapper := func() (map[rune]color.Color, map[color.Color]rune) {
 		return r2c, c2r
 	}
 
 	// Encrypt the words
-	encryptedWords := make([][]byte, len(words))
-	seeds := []string{firstSeed}
-	for i := range words {
-		encryptedWords[i] = lib.Encrypt(words[i], seeds[i])
-		seeds = append(seeds, string(encryptedWords[i]))
-	}
+	encryptedWords, err := encrypter.EncryptWords(nil)
+	require.NoError(t, err)
 
 	// Decode from colors
-	decoder := lib.NewDecoder(firstSeed, c2rMapper)
+	decoder := lib.NewDecoder(c2rMapper, decrypter)
 	for i, cw := range encryptedWords {
 		// build the colors array for the crypted word
 		colors := []color.Color{}
@@ -40,10 +31,8 @@ func TestColors2Word(t *testing.T) {
 		}
 		// decode the color to word, decrypting it using its seed
 		cryptedWord, err := decoder.Colors2CryptedWord(colors)
-		decoded := lib.Decrypt(cryptedWord, seeds[i])
-
 		require.NoError(t, err)
-		require.Equal(t, string(words[i]), string(decoded))
+		require.Equal(t, encryptedWords[i], cryptedWord)
 	}
 }
 
