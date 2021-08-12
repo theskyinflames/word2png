@@ -11,10 +11,11 @@ import (
 
 func main() {
 	var (
-		file  = kingpin.Flag("file", "Save to the especified file if it's filled").Short('f').String()
-		seed  = kingpin.Flag("seed", "coding seed").Short('s').Required().String()
-		words = kingpin.Flag("words", "list of words to encode").Short('w').Strings()
-		debug = kingpin.Flag("debug", "writes a debug file").Short('d').Bool()
+		imagePath = kingpin.Flag("file", "Save to the especified file if it's filled").Short('f').String()
+		seed      = kingpin.Flag("seed", "coding seed").Short('s').Required().String()
+		words     = kingpin.Flag("words", "list of words to encode").Short('w').Strings()
+		debug     = kingpin.Flag("debug", "writes a debug file").Short('d').Bool()
+		b64       = kingpin.Flag("b64", "b64encoded image").String()
 
 		debugFile *os.File
 		err       error
@@ -29,13 +30,23 @@ func main() {
 		}()
 	}
 
-	encoder := lib.NewEncoder(lib.Rune2Color(*seed), lib.NewAES256(*seed), lib.EncoderDebugWriterOpt(debugFile))
+	aes256 := lib.NewAES256(*seed)
+
+	// If the image already exists, received words will be appended to the existent ones
+	if (*imagePath != "" && imageExists(*imagePath)) || *b64 != "" {
+		decoder := lib.NewDecoder(lib.Rune2Color(*seed), aes256, lib.DecodeDebugWriterOpt(debugFile))
+		beforeWords, err := decoder.DecodeFromSource(*imagePath, *b64)
+		exitIfError(err)
+		*words = append(beforeWords, *words...)
+	}
+
+	encoder := lib.NewEncoder(lib.Rune2Color(*seed), aes256, lib.EncoderDebugWriterOpt(debugFile))
 	b, err := encoder.Encode(*words)
 	exitIfError(err)
 
 	switch {
-	case *file != "":
-		exitIfError(lib.SaveEncodedImage(b, *file))
+	case *imagePath != "":
+		exitIfError(lib.SaveEncodedImage(b, *imagePath))
 	default:
 		b64Encoder := base64.NewEncoder(base64.StdEncoding, os.Stdout)
 		_, err = b64Encoder.Write(b)
@@ -52,4 +63,12 @@ func exitIfError(err error) {
 		fmt.Printf("ERROR: %s\n", err.Error())
 		os.Exit(-1)
 	}
+}
+
+func imageExists(imagePath string) bool {
+	// if error is nil, I guess the file exists
+	if _, err := os.Stat(imagePath); err == nil {
+		return true
+	}
+	return false
 }

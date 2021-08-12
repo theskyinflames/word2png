@@ -1,10 +1,7 @@
 package main
 
 import (
-	"encoding/base64"
-	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 
 	"github.com/theskyinflames/image-coder/lib"
@@ -20,20 +17,8 @@ func main() {
 
 		debugFile *os.File
 		err       error
-		buff      []byte
 	)
 	kingpin.Parse()
-
-	switch {
-	case *file == "" && *b64 == "":
-		exitIfError(errors.New("must be specified either a file or a b64 encoded string"))
-	case *file != "":
-		buff, err = ioutil.ReadFile(*file)
-		exitIfError(err)
-	default:
-		buff, err = base64.StdEncoding.DecodeString(*b64)
-		exitIfError(err)
-	}
 
 	if debug != nil && *debug {
 		debugFile, err = os.Create("./decrypted-bytes.txt")
@@ -45,7 +30,7 @@ func main() {
 
 	decrypter := lib.NewAES256(*seed)
 	decoder := lib.NewDecoder(lib.Rune2Color(*seed), decrypter, lib.DecodeDebugWriterOpt(debugFile))
-	words, err := decoder.Decode(buff)
+	words, err := decoder.DecodeFromSource(*file, *b64)
 	exitIfError(err)
 
 	fmt.Println("decoding process finished.")

@@ -2,11 +2,13 @@ package lib
 
 import (
 	"bytes"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"image/color"
 	"image/png"
 	"io"
+	"io/ioutil"
 	"strings"
 )
 
@@ -151,4 +153,30 @@ func (d Decoder) Colors2CryptedWord(colors []color.Color) ([]byte, error) {
 func RemoveEnumerationToken(word string) string {
 	tokenAt := strings.Index(word, EnumerateToken)
 	return word[tokenAt+1:]
+}
+
+// DecodeFromSource decodes an image from the provided source
+// TODO add test
+func (d Decoder) DecodeFromSource(imagePath string, b64 string) ([]string, error) {
+	var (
+		buff []byte
+		err  error
+	)
+
+	switch {
+	case imagePath == "" && b64 == "":
+		return nil, errors.New("must be specified either a file or a b64 encoded string")
+	case imagePath != "":
+		buff, err = ioutil.ReadFile(imagePath)
+		if err != nil {
+			return nil, err
+		}
+	default:
+		buff, err = base64.StdEncoding.DecodeString(b64)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return d.Decode(buff)
 }
