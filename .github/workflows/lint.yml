@@ -1,0 +1,22 @@
+name: Code Lint
+on: [push, pull_request]
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Go 1.17
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.17.x
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v2.3.4
+      - name: Cache Dependencies
+        uses: actions/cache@v2.1.6
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+      - name: Download lint tools
+        run: make tools
+      - name: Lint tests
+        run: make lint

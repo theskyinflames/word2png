@@ -67,7 +67,7 @@ So the decoding process consist, basically on:
 ## TODO
 * Some refactors on the code to make it simpler 
 * Add RSA encryption support
-* Add Github actions to pass tests and linter
+* ~~Add Github actions to pass tests and linter~~
 * Improve the debug stream management
 
 ## Disclaimer
