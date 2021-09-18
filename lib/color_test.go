@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/theskyinflames/image-coder/lib"
+	"github.com/theskyinflames/word2png/lib"
 )
 
 func TestRune2Color(t *testing.T) {

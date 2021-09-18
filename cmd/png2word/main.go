@@ -5,7 +5,7 @@ import (
 	"os"
 	"regexp"
 
-	"github.com/theskyinflames/image-coder/lib"
+	"github.com/theskyinflames/word2png/lib"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 

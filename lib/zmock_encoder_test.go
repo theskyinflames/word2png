@@ -4,7 +4,7 @@
 package lib_test
 
 import (
-	"github.com/theskyinflames/image-coder/lib"
+	"github.com/theskyinflames/word2png/lib"
 	"sync"
 )
 
