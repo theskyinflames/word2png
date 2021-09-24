@@ -4,6 +4,9 @@ install:
 	cd cmd/word2png && go install .
 	cd cmd/png2word && go install .
 
+build-wasm:
+	cd cmd/wasm && GOOS=js GOARCH=wasm go build -o ../../wasm/word2png.wasm && cd ../..
+
 test:
 	go test -v -race ./...
 
