@@ -5,7 +5,7 @@ install:
 	cd cmd/png2word && go install .
 
 build-wasm:
-	cd cmd/wasm && GOOS=js GOARCH=wasm go build -o ../../wasm/word2png.wasm && cd ../..
+	GOOS=js GOARCH=wasm go build -tags wasm -o ./assets/world2png.wasm ./cmd/wasm/main.go
 
 test:
 	go test -v -race ./...
@@ -21,7 +21,6 @@ tool-golangci-lint:
 
 tool-fumpt:
 	go get -u mvdan.cc/gofumpt
-	go get -u mvdan.cc/gofumpt/gofumports
 
 tool-moq:
 	go get -u github.com/matryer/moq
@@ -33,3 +32,4 @@ generate:
 	@go mod vendor
 	go generate ./... | true
 	@rm -rf ./vendor
+

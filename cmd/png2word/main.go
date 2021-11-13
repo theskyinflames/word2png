@@ -46,7 +46,7 @@ func main() {
 	fmt.Println("decoding process finished.")
 	fmt.Printf("Have been decoded %d words:", len(words))
 	for i := range words {
-		if matchFilter.Match([]byte(words[i])) {
+		if matchFilter.MatchString(words[i]) {
 			fmt.Printf("\n%d - %s", i+1, words[i])
 		}
 	}
