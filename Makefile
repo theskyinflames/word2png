@@ -5,6 +5,7 @@ install:
 	cd cmd/png2word && go install .
 
 build-wasm:
+	mkdir -p ./assets
 	GOOS=js GOARCH=wasm go build -tags wasm -o ./assets/world2png.wasm ./cmd/wasm/main.go
 
 test:

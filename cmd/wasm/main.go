@@ -6,10 +6,13 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"syscall/js"
 
 	"github.com/theskyinflames/word2png/lib"
 )
+
+const errMsg = "W2P ERROR: %s"
 
 func decode(b []byte, filter string, seed string) ([]string, error) {
 	decrypter := lib.NewAES256(seed)
@@ -20,7 +23,7 @@ func decode(b []byte, filter string, seed string) ([]string, error) {
 func jsDecoder() js.Func {
 	jsonFunc := js.FuncOf(func(this js.Value, args []js.Value) interface{} {
 		if len(args) != 3 {
-			return "Invalid no of arguments passed"
+			return fmt.Sprintf(errMsg, "Invalid no of arguments passed")
 		}
 
 		// decode the binary array of the secret image file recieved from JS
@@ -35,16 +38,11 @@ func jsDecoder() js.Func {
 		// decode the secret
 		words, err := decode(received, filter, seed)
 		if err != nil {
-			return err.Error()
+			return fmt.Sprintf(errMsg, err.Error())
 		}
 
-		// wasm does not allows returning slices/arrays
-		bw, err := json.Marshal(words)
-		if err != nil {
-			return err.Error()
-		}
-
-		return string(bw)
+		b, _ := json.Marshal(words)
+		return string(b)
 	})
 	return jsonFunc
 }
