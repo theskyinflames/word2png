@@ -5,7 +5,6 @@
 package main
 
 import (
-	"encoding/json"
 	"syscall/js"
 
 	"github.com/theskyinflames/word2png/lib"
@@ -38,13 +37,7 @@ func jsDecoder() js.Func {
 			return err.Error()
 		}
 
-		// wasm does not allows returning slices/arrays
-		bw, err := json.Marshal(words)
-		if err != nil {
-			return err.Error()
-		}
-
-		return string(bw)
+		return words
 	})
 	return jsonFunc
 }
