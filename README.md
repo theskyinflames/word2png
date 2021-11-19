@@ -64,6 +64,13 @@ So the decoding process consist, basically on:
 3. Combine the bytes in pairs to get the original encrypted form of the word
 4. Decrypt the word
 
+## WASM
+It has been added a WASM module to decode secrets. To build it, you have to execute the make rule:
+```sh
+    make build-wasm
+```
+This will build the WASM module `wasm/main.go` and leave it in the `assets` folder. As soon as I can, I'll publish an example of how to use it in a web application.
+
 ## TODO
 * Some refactors on the code to make it simpler 
 * Add RSA encryption support
