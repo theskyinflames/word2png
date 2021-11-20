@@ -69,7 +69,8 @@ It has been added a WASM module to decode secrets. To build it, you have to exec
 ```sh
     make build-wasm
 ```
-This will build the WASM module `wasm/main.go` and leave it in the `assets` folder. As soon as I can, I'll publish an example of how to use it in a web application.
+This will build the WASM module `wasm/main.go` and leave it in the `assets` folder. You have an example of how to use it [here](https://github.com/theskyinflames/word2pngUI).
+As soon as I can, I´ll add the secrets encoding part also.
 
 ## TODO
 * Some refactors on the code to make it simpler 
