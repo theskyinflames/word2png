@@ -74,7 +74,7 @@ As soon as I can, I´ll add the secrets encoding part also.
 
 ## TODO
 * Some refactors on the code to make it simpler 
-* Add RSA encryption support
+* Add asymmetric encryption support
 * ~~Add Github actions to pass tests and linter~~
 * Improve the debug stream management
 
