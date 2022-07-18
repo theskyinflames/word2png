@@ -91,3 +91,9 @@ I've coded it only for fun. Please read the LICENSE. I hope you enjoy using it a
 [online equations editor](http://www.imatheq.com/)
 
 [golang project structure](https://raygervais.dev/articles/2020/11/understanding-golang-project-structure)
+
+## Do you think this is useful? back me up
+Think and build this tool, has taken part of my time and effort. If you find it useful, and you think I deserve it, you can invite me a coffee :-)
+
+ <a href="https://www.buymeacoffee.com/jaumearus" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>
+
