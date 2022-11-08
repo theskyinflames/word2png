@@ -1,5 +1,5 @@
 # word2png
-This is a tool that encrypts a sequence of words (or pieces of texts) using the AES-256 algorithm and encodes the encrypted result into a PNG image by linking each byte value to a specific color, using two colors for each byte (read below). Later, this image is decoded to get back the original sequence of words. The generated PNG image has these characteristics:
+This is a tool that encrypts a sequence of words (or pieces of texts) using the AES-256 algorithm and then encodes the encrypted result into a PNG image by linking each byte value to a specific color, using two colors for each byte (read below). Later, this image is decoded to get back the original sequence of words. The generated PNG image has these characteristics:
 
 * Each line of pixels is an encrypted word
 * Words appear in the image in the same order top->down that they have been provided to the tool.
