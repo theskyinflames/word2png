@@ -29,7 +29,7 @@ func jsDecoder() js.Func {
 			return fmt.Sprintf(errMsg, "Invalid no of arguments passed")
 		}
 
-		// decode the binary array of the secret image file recieved from JS
+		// decode the binary array of the secret image file received from JS
 		// IMPORTANT: the byte array must be passed as an Uint8Array array from JS
 		// see https://github.com/theskyinflames/word2pngUI repo to have an example of usage
 		received := make([]byte, args[0].Get("length").Int())
