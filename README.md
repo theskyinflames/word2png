@@ -1,3 +1,5 @@
+![Go Report Card](https://goreportcard.com/badge/github.com/theskyinflames/word2png)
+
 # word2png
 This is a tool that encrypts a sequence of words (or pieces of texts) using the AES-256 algorithm and then encodes the encrypted result into a PNG image by linking each byte value to a specific color, using two colors for each byte (read below). Later, this image is decoded to get back the original sequence of words. The generated PNG image has these characteristics:
 
