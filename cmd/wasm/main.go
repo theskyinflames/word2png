@@ -1,7 +1,7 @@
 //go:build wasm
 // +build wasm
 
-//nolint
+// nolint
 package main
 
 import (

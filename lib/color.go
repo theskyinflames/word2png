@@ -24,26 +24,26 @@ var (
 // 1. We get the binary mask from the seed
 // 2. Create two string slices: head and tail
 // 3. Iterate binary seed mask, and for each position:
-//     - we take the rune that corresponds to the position number: rune(position)
-//     - if there is a '0' in the mask,
-//          the rune is added to the tail slice
-//       else, the rune is added to the head slice.
-//     - at the end, we concatenate head + tail slices
+//   - we take the rune that corresponds to the position number: rune(position)
+//   - if there is a '0' in the mask,
+//     the rune is added to the tail slice
+//     else, the rune is added to the head slice.
+//   - at the end, we concatenate head + tail slices
 //     So, for a seed binary mask "01011101...", we'll end up with an slice like "b,d,e,f,h,....,a,c,g, ...."
-// 4. Building the encoding map f(rune)->color.Color . Taking the above slide,
+//     4. Building the encoding map f(rune)->color.Color . Taking the above slide,
 //     for each string we apply the color which is in the same position with a map.
 //     Taking our before example:
-//  		* b->[]color.Color[0]
-//			* d->[]color.Color[1]
-//          * e->[]color.Color[2]
-//			* f->[]color.Color[3]
-//			...
-// 5. Building the decoding map f(color.Color)->r
-//  		* []color.Color[0]->b
-//			* []color.Color[1]->d
-//          * []color.Color[2]->e
-//			* []color.Color[3]->f
-//			...
+//   - b->[]color.Color[0]
+//   - d->[]color.Color[1]
+//   - e->[]color.Color[2]
+//   - f->[]color.Color[3]
+//     ...
+//     5. Building the decoding map f(color.Color)->r
+//   - []color.Color[0]->b
+//   - []color.Color[1]->d
+//   - []color.Color[2]->e
+//   - []color.Color[3]->f
+//     ...
 func Rune2Color(seed string) Rune2ColorMapper {
 	return func() (map[rune]color.Color, map[color.Color]rune) {
 		md5BinaryMask := createMaskFromSeed(seed)
