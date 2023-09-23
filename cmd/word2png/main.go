@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/alecthomas/kingpin/v2"
 	"github.com/pterm/pterm"
 	"github.com/theskyinflames/word2png/lib"
-	"gopkg.in/alecthomas/kingpin.v2"
 )
 
 func main() {
