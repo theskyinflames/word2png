@@ -25,7 +25,7 @@ run:
 linters:
   disable-all: true
   enable:
-  - deadcode
+  - unused
   - errcheck
   - gocritic
   - goconst
@@ -38,12 +38,10 @@ linters:
   - lll
   - misspell
   - staticcheck
-  - structcheck
   - stylecheck
   - typecheck
   - unconvert
   - unparam
-  - varcheck
   fast: false
 
 linters-settings:

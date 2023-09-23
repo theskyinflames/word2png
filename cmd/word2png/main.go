@@ -5,23 +5,31 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/alecthomas/kingpin/v2"
+	"github.com/pterm/pterm"
 	"github.com/theskyinflames/word2png/lib"
-	"gopkg.in/alecthomas/kingpin.v2"
 )
 
 func main() {
 	var (
 		imagePath   = kingpin.Flag("file", "Save to the especified file if it's filled").Short('f').String()
-		seed        = kingpin.Flag("seed", "coding seed").Short('s').Required().String()
 		words       = kingpin.Flag("words", "list of words to encode").Short('w').Strings()
 		debug       = kingpin.Flag("debug", "writes a debug file").Short('d').Bool()
 		b64         = kingpin.Flag("b64", "b64encoded image").String()
 		removeWords = kingpin.Flag("remove-word", "remove a word from an image by index number").Short('r').Ints()
 
+		// dangerous zone
+		showSeed = kingpin.Flag("show-seed", "shows the entered seed").Short('s').Bool()
+
 		debugFile *os.File
 		err       error
 	)
 	kingpin.Parse()
+
+	seed, _ := pterm.DefaultInteractiveTextInput.WithMask("*").Show("Enter your seed")
+	if *showSeed {
+		pterm.DefaultBasicText.Printf("Entered seed: %s\n", pterm.BgYellow.Sprintf(pterm.Black(seed)))
+	}
 
 	if debug != nil && *debug {
 		debugFile, err = os.Create("./encrypted-bytes.txt")
@@ -31,11 +39,11 @@ func main() {
 		}()
 	}
 
-	aes256 := lib.NewAES256(*seed)
+	aes256 := lib.NewAES256(seed)
 
 	// If the image already exists, received words will be appended to the existent ones
 	if (*imagePath != "" && imageExists(*imagePath)) || *b64 != "" {
-		decoder := lib.NewDecoder(lib.Rune2Color(*seed), aes256, lib.DecodeDebugWriterOpt(debugFile))
+		decoder := lib.NewDecoder(lib.Rune2Color(seed), aes256, lib.DecodeDebugWriterOpt(debugFile))
 		beforeWords, err := decoder.DecodeFromSource(*imagePath, *b64)
 		exitIfError(err)
 		*words = append(beforeWords, *words...)
@@ -44,7 +52,7 @@ func main() {
 	// If remove-words flag has been provided, it's applied
 	*words = RemoveWordsByIdx(*words, *removeWords)
 
-	encoder := lib.NewEncoder(lib.Rune2Color(*seed), aes256, lib.EncoderDebugWriterOpt(debugFile))
+	encoder := lib.NewEncoder(lib.Rune2Color(seed), aes256, lib.EncoderDebugWriterOpt(debugFile))
 	b, err := encoder.Encode(*words)
 	exitIfError(err)
 
