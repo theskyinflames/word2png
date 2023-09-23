@@ -8,7 +8,7 @@ import (
 	"image/color"
 	"image/png"
 	"io"
-	"io/ioutil"
+	"os"
 	"strings"
 )
 
@@ -167,7 +167,7 @@ func (d Decoder) DecodeFromSource(imagePath string, b64 string) ([]string, error
 	case imagePath == "" && b64 == "":
 		return nil, errors.New("must be specified either a file or a b64 encoded string")
 	case imagePath != "":
-		buff, err = ioutil.ReadFile(imagePath)
+		buff, err = os.ReadFile(imagePath)
 		if err != nil {
 			return nil, err
 		}

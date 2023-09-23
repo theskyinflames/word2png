@@ -1,7 +1,6 @@
 package lib_test
 
 import (
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -33,7 +32,7 @@ func TestEncodingDecoding(t *testing.T) {
 	}()
 
 	// decoding
-	encodedImage, err = ioutil.ReadFile(filePath)
+	encodedImage, err = os.ReadFile(filePath)
 	require.NoError(t, err)
 	decoder := lib.NewDecoder(lib.Rune2Color(seed), decrypter)
 	decodedWords, err := decoder.Decode(encodedImage)
