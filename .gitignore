@@ -4,3 +4,4 @@
 *.txt
 cmd/*/*png
 assets/
+.gocache/
