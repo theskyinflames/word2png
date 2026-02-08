@@ -33,7 +33,7 @@ type Encoder struct {
 	encrypter   Encrypter
 }
 
-// Rune2ColorMapper maps from a rune to color and viceversa
+// Rune2ColorMapper maps from rune to color and vice versa.
 type Rune2ColorMapper func() (map[rune]color.Color, map[color.Color]rune)
 
 // NewEncoder is a constructor
@@ -51,7 +51,7 @@ func NewEncoder(r2cMapper Rune2ColorMapper, encrypter Encrypter, opts ...Encoder
 	return e
 }
 
-var errMsgNoColorsForWord = "no colors for the word %s"
+var errMsgNoColorsForWord = "no colors for the word %q"
 
 // Encode encodes a list of words in an image based on the rune-2-color slice
 func (e Encoder) Encode(words []string) ([]byte, error) {
@@ -82,7 +82,7 @@ func (e Encoder) Encode(words []string) ([]byte, error) {
 	for y, word := range words {
 		wordColors, ok := w2c[word]
 		if !ok {
-			return nil, fmt.Errorf(errMsgNoColorsForWord)
+			return nil, fmt.Errorf(errMsgNoColorsForWord, word)
 		}
 		for x, wc := range wordColors {
 			img.Set(x, y, wc)
@@ -106,19 +106,19 @@ func longestWord(words map[string][]color.Color) int {
 	return l
 }
 
-// ErrMsgNoColorForRune is self described
+// ErrMsgNoColorForRune is returned when a byte nibble has no rune/color mapping.
 var ErrMsgNoColorForRune = "no color for the rune %d"
 
-// Words2colors return for each word, its representation as an array of colors
+// Words2colors returns each word represented as a color slice.
 func (e Encoder) Words2colors(words []string) (map[string][]color.Color, error) {
 	encryptedWords, err := e.encrypter.EncryptWords(words)
 	if err != nil {
 		return nil, err
 	}
 
-	m := make(map[string][]color.Color)
+	m := make(map[string][]color.Color, len(words))
 	for i, word := range words {
-		m[word] = []color.Color{}
+		m[word] = make([]color.Color, 0, len(encryptedWords[i])*2+1)
 
 		if e.debugWriter != nil {
 			_, _ = e.debugWriter.Write([]byte(fmt.Sprintf("\nword: %d \n", i)))
@@ -127,12 +127,12 @@ func (e Encoder) Words2colors(words []string) (map[string][]color.Color, error) 
 		for _, wordByte := range encryptedWords[i] {
 			// MD5 checksum signature limits us to having only 128 available colors.
 			// But with each byte we have 256 (2^8) possibilities for the color.
-			// So I take one color for the first 4 bits (low) of each byte
+			// So we take one color for the first 4 bits (low) of each byte
 			// and another one for the next 4 bits (high)
-			// By doing that, for example, a byte 10111001 is splited in two
+			// By doing that, for example, a byte 10111001 is split in two
 			// bytes: 00001011 (high part) and 00001001 (low part). Each of these
-			// parts will have its own color. So, at decode time, these two bytes
-			// will be reconbined againg to get back the original byte 10111001.
+			// parts has its own color. At decode time, these two bytes
+			// are recombined again to get back the original byte 10111001.
 			high, low := SplitByte(wordByte)
 
 			if e.debugWriter != nil {
@@ -159,10 +159,9 @@ const (
 	EnumerationMask = "%d%s%s"
 )
 
-// EnumerateWords allow encoder to support repeated words
-// Without enumerating the words, Word2Colors method will fail
-// building the map word->[]color
-// View https://github.com/theskyinflames/word2png/issues/1
+// EnumerateWords allows the encoder to support repeated words.
+// Without this, Words2colors cannot uniquely key the map word->[]color.
+// See https://github.com/theskyinflames/word2png/issues/1.
 func EnumerateWords(words []string) []string {
 	enumerated := make([]string, len(words))
 	for i := range words {

@@ -18,7 +18,7 @@ type Decrypter interface {
 	DecryptWords(encryptedWords [][]byte) ([]string, error)
 }
 
-// DecoderOption a constructor option
+// DecoderOption is a constructor option.
 type DecoderOption func(*Decoder)
 
 // Decoder decodes encoded words in a PNG image
@@ -111,10 +111,10 @@ func (d Decoder) Decode(coded []byte) ([]string, error) {
 	return readWords, nil
 }
 
-// ErrMsgNoRuneForColor is self described
+// ErrMsgNoRuneForColor is returned when a color has no rune mapping.
 var ErrMsgNoRuneForColor = "no rune for the color %s"
 
-// Colors2CryptedWord translates the array of colors to the original word
+// Colors2CryptedWord translates the color array to the encrypted bytes.
 func (d Decoder) Colors2CryptedWord(colors []color.Color) ([]byte, error) {
 	// Each 2 Colors is equivalent to the high and low parts of the
 	// byte that belongs to the encrypted form of the original word.
@@ -123,16 +123,20 @@ func (d Decoder) Colors2CryptedWord(colors []color.Color) ([]byte, error) {
 	// of the original word. So, all we'll have to do to get the word is decrypt
 	// this sequence of bytes.
 
-	// Rebuild the encrypted form of the word
-	cryptedWord := []byte{}
+	if len(colors)%2 != 0 {
+		return nil, errors.New("invalid encoded word: odd number of colors")
+	}
+
+	// Rebuild the encrypted form of the word.
+	cryptedWord := make([]byte, 0, len(colors)/2)
 	for i := 0; i < len(colors); i += 2 {
 		cHigh, ok := d.c2r[colors[i]]
 		if !ok {
-			return nil, fmt.Errorf(ErrMsgNoRuneForColor, fmt.Sprintf("%#v", cHigh))
+			return nil, fmt.Errorf(ErrMsgNoRuneForColor, fmt.Sprintf("%#v", colors[i]))
 		}
 		cLow, ok := d.c2r[colors[i+1]]
 		if !ok {
-			return nil, fmt.Errorf(ErrMsgNoRuneForColor, fmt.Sprintf("%#v", cHigh))
+			return nil, fmt.Errorf(ErrMsgNoRuneForColor, fmt.Sprintf("%#v", colors[i+1]))
 		}
 
 		originalByte := JoinByte(byte(cHigh), byte(cLow))
@@ -149,9 +153,12 @@ func (d Decoder) Colors2CryptedWord(colors []color.Color) ([]byte, error) {
 	return cryptedWord, nil
 }
 
-// RemoveEnumerationToken is self described
+// RemoveEnumerationToken strips the "<idx>." prefix added by EnumerateWords.
 func RemoveEnumerationToken(word string) string {
 	tokenAt := strings.Index(word, EnumerateToken)
+	if tokenAt < 0 {
+		return word
+	}
 	return word[tokenAt+1:]
 }
 
