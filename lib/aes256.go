@@ -6,6 +6,7 @@ import (
 	"crypto/md5"
 	"crypto/rand"
 	"encoding/hex"
+	"errors"
 	"io"
 )
 
@@ -39,7 +40,10 @@ func (a AES256) EncryptWords(words []string) ([][]byte, error) {
 func (a AES256) Encrypt(data []byte, passphrase string) ([]byte, error) {
 	// AES-256 needs a 32 bytes key. So it's taken form
 	// the passphrase MD5 checksum
-	key, _ := hex.DecodeString(createHash(passphrase))
+	key, err := hex.DecodeString(createHash(passphrase))
+	if err != nil {
+		return nil, err
+	}
 
 	// Create a new Cipher Block from the key
 	block, err := aes.NewCipher(key)
@@ -88,7 +92,10 @@ func (a AES256) DecryptWords(encryptedWords [][]byte) ([]string, error) {
 func (a AES256) Decrypt(data []byte, passphrase string) ([]byte, error) {
 	// AES-256 needs a 32 bytes key. So it's taken form
 	// the passphrase MD5 checksum
-	key, _ := hex.DecodeString(createHash(passphrase))
+	key, err := hex.DecodeString(createHash(passphrase))
+	if err != nil {
+		return nil, err
+	}
 
 	// Create a new Cipher Block from the key
 	block, err := aes.NewCipher(key)
@@ -104,6 +111,9 @@ func (a AES256) Decrypt(data []byte, passphrase string) ([]byte, error) {
 
 	// Get the nonce size
 	nonceSize := aesGCM.NonceSize()
+	if len(data) < nonceSize {
+		return nil, errors.New("ciphertext too short")
+	}
 
 	// Extract the nonce from the encrypted data
 	nonce, ciphertext := data[:nonceSize], data[nonceSize:]
