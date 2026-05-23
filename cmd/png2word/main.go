@@ -30,7 +30,7 @@ func main() {
 
 	seed, _ := pterm.DefaultInteractiveTextInput.WithMask("*").Show("\nEnter your seed")
 	if *showSeed {
-		pterm.DefaultBasicText.Printf("Entered seed: %s\n", pterm.BgYellow.Sprintf(pterm.Black(seed)))
+		pterm.DefaultBasicText.Printf("Entered seed: %s\n", pterm.BgYellow.Sprint(pterm.Black(seed)))
 	}
 
 	if *filter == "" {

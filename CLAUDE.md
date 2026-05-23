@@ -28,7 +28,7 @@ go test -v -race ./cmd/word2png/ -run TestRemoveWordsByIdx
 ### Packages
 
 - **`lib/`** — Core library. All encoding/decoding logic lives here.
-  - `aes256.go` — AES-256-GCM chain encryption. Each word is encrypted using the previous ciphertext as the passphrase (prevents reordering attacks). Key is derived via MD5 to produce 32 bytes.
+   - `aes256.go` — AES-256-GCM chain encryption. Each word is encrypted using the previous ciphertext as the passphrase (prevents reordering attacks). Key is derived via Argon2id to produce 32 bytes.
   - `color.go` — Bijective rune↔color mapping. Uses MD5 of the seed to reorder the WebSafe palette deterministically. Black/white are excluded (used as markers).
   - `byte.go` — Splits bytes into high/low nibbles (4 bits each) and rejoins them. This overcomes the 256-value limit given a 128-color palette.
   - `encoder.go` — Orchestrates words → AES-256 → nibbles → colors → paletted PNG.
