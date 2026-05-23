@@ -3,11 +3,11 @@ package lib
 import (
 	"crypto/aes"
 	"crypto/cipher"
-	"crypto/md5"
 	"crypto/rand"
-	"encoding/hex"
 	"errors"
 	"io"
+
+	"golang.org/x/crypto/argon2"
 )
 
 type AES256 struct {
@@ -36,40 +36,33 @@ func (a AES256) EncryptWords(words []string) ([][]byte, error) {
 	return encryptedWords, nil
 }
 
-// Encrypt encrypts given byte array using AES-256 algorithm using the passphrase
+// Encrypt encrypts given byte array using AES-256-GCM with an Argon2id-derived key.
 func (a AES256) Encrypt(data []byte, passphrase string) ([]byte, error) {
-	// AES-256 needs a 32 bytes key. So it's taken form
-	// the passphrase MD5 checksum
-	key, err := hex.DecodeString(createHash(passphrase))
-	if err != nil {
+	salt := make([]byte, 16)
+	if _, err := io.ReadFull(rand.Reader, salt); err != nil {
 		return nil, err
 	}
 
-	// Create a new Cipher Block from the key
+	key := deriveKey(passphrase, salt)
+
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, err
 	}
 
-	// Create a new GCM - https://en.wikipedia.org/wiki/Galois/Counter_Mode
-	// https://golang.org/pkg/crypto/cipher/#NewGCM
 	aesGCM, err := cipher.NewGCM(block)
 	if err != nil {
 		return nil, err
 	}
 
-	// Create a nonce. Nonce should be from GCM
 	nonce := make([]byte, aesGCM.NonceSize())
 	if _, err = io.ReadFull(rand.Reader, nonce); err != nil {
 		return nil, err
 	}
 
-	// Encrypt the data using aesGCM.Seal
-	// Since we don't want to save the nonce somewhere else in this case,
-	// we add it as a prefix to the encrypted data.
-	// The first nonce argument in Seal is the prefix.
+	// Prepend nonce to ciphertext so it can be extracted during decryption.
 	ciphertext := aesGCM.Seal(nonce, nonce, data, nil)
-	return ciphertext, nil
+	return append(salt, ciphertext...), nil
 }
 
 func (a AES256) DecryptWords(encryptedWords [][]byte) ([]string, error) {
@@ -88,38 +81,35 @@ func (a AES256) DecryptWords(encryptedWords [][]byte) ([]string, error) {
 	return decryptedWords, nil
 }
 
-// Decrypt decrypts given byte array using AES-256 algorithm using the passphrase
+// Decrypt decrypts given byte array using AES-256-GCM with an Argon2id-derived key.
 func (a AES256) Decrypt(data []byte, passphrase string) ([]byte, error) {
-	// AES-256 needs a 32 bytes key. So it's taken form
-	// the passphrase MD5 checksum
-	key, err := hex.DecodeString(createHash(passphrase))
-	if err != nil {
-		return nil, err
+	if len(data) < 16 {
+		return nil, errors.New("ciphertext too short")
 	}
 
-	// Create a new Cipher Block from the key
+	salt := data[:16]
+	ciphertext := data[16:]
+
+	key := deriveKey(passphrase, salt)
+
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, err
 	}
 
-	// Create a new GCM
 	aesGCM, err := cipher.NewGCM(block)
 	if err != nil {
 		return nil, err
 	}
 
-	// Get the nonce size
 	nonceSize := aesGCM.NonceSize()
-	if len(data) < nonceSize {
+	if len(ciphertext) < nonceSize {
 		return nil, errors.New("ciphertext too short")
 	}
 
-	// Extract the nonce from the encrypted data
-	nonce, ciphertext := data[:nonceSize], data[nonceSize:]
+	nonce, encryptedData := ciphertext[:nonceSize], ciphertext[nonceSize:]
 
-	// Decrypt the data
-	decryptedData, err := aesGCM.Open(nil, nonce, ciphertext, nil)
+	decryptedData, err := aesGCM.Open(nil, nonce, encryptedData, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -127,8 +117,13 @@ func (a AES256) Decrypt(data []byte, passphrase string) ([]byte, error) {
 	return decryptedData, nil
 }
 
-func createHash(key string) string {
-	hasher := md5.New()
-	hasher.Write([]byte(key))
-	return hex.EncodeToString(hasher.Sum(nil))
+const (
+	argon2Time    = 1
+	argon2Memory  = 64 * 1024 // 64 MB
+	argon2Threads = 4
+	argon2KeyLen  = 32 // 256 bits for AES-256
+)
+
+func deriveKey(passphrase string, salt []byte) []byte {
+	return argon2.IDKey([]byte(passphrase), salt, argon2Time, argon2Memory, argon2Threads, argon2KeyLen)
 }
