@@ -1,10 +1,65 @@
 package main
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
+
+func TestReadWordsFromFile(t *testing.T) {
+	t.Parallel()
+
+	t.Run("reads words from file successfully", func(t *testing.T) {
+		dir := t.TempDir()
+		path := filepath.Join(dir, "words.txt")
+		err := os.WriteFile(path, []byte("word1\nword2\nword3\n"), 0644)
+		require.NoError(t, err)
+
+		words, err := readWordsFromFile(path)
+		require.NoError(t, err)
+		require.Equal(t, []string{"word1", "word2", "word3"}, words)
+	})
+
+	t.Run("skips empty lines and trims whitespace", func(t *testing.T) {
+		dir := t.TempDir()
+		path := filepath.Join(dir, "words.txt")
+		err := os.WriteFile(path, []byte("  word1  \n\nword2\n  \nword3\n"), 0644)
+		require.NoError(t, err)
+
+		words, err := readWordsFromFile(path)
+		require.NoError(t, err)
+		require.Equal(t, []string{"word1", "word2", "word3"}, words)
+	})
+
+	t.Run("returns error on non-existent file", func(t *testing.T) {
+		_, err := readWordsFromFile("/nonexistent/path.txt")
+		require.Error(t, err)
+	})
+
+	t.Run("returns error on oversized file", func(t *testing.T) {
+		dir := t.TempDir()
+		path := filepath.Join(dir, "big.txt")
+		data := make([]byte, maxFileWordsSize+1)
+		err := os.WriteFile(path, data, 0644)
+		require.NoError(t, err)
+
+		_, err = readWordsFromFile(path)
+		require.Error(t, err)
+	})
+
+	t.Run("returns empty slice for empty file", func(t *testing.T) {
+		dir := t.TempDir()
+		path := filepath.Join(dir, "empty.txt")
+		err := os.WriteFile(path, []byte{}, 0644)
+		require.NoError(t, err)
+
+		words, err := readWordsFromFile(path)
+		require.NoError(t, err)
+		require.Empty(t, words)
+	})
+}
 
 func TestRemoveWordsByIdx(t *testing.T) {
 	t.Parallel()

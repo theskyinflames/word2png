@@ -1,15 +1,19 @@
 package main
 
 import (
+	"bufio"
 	"encoding/base64"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/alecthomas/kingpin/v2"
 	"github.com/pterm/pterm"
 
 	"github.com/theskyinflames/word2png/lib"
 )
+
+const maxFileWordsSize = 1 * 1024 * 1024 // 1MB
 
 func main() {
 	os.Exit(run())
@@ -19,12 +23,22 @@ func run() int {
 	var (
 		imagePath   = kingpin.Flag("file", "Save to the especified file if it's filled").Short('f').String()
 		words       = kingpin.Flag("words", "list of words to encode").Short('w').Strings()
+		fileWords   = kingpin.Flag("file-words", "path to a text file containing words to encode (one per line, max 1MB)").String()
 		debug       = kingpin.Flag("debug", "writes a debug file").Short('d').Bool()
 		b64         = kingpin.Flag("b64", "b64encoded image").String()
 		removeWords = kingpin.Flag("remove-word", "remove a word from an image by index number").Short('r').Ints()
 		showSeed    = kingpin.Flag("show-seed", "shows the entered seed").Short('s').Bool()
 	)
 	kingpin.Parse()
+
+	if *fileWords != "" {
+		fileWordsList, err := readWordsFromFile(*fileWords)
+		if err != nil {
+			fmt.Printf("ERROR: %s\n", err.Error())
+			return 1
+		}
+		*words = append(*words, fileWordsList...)
+	}
 
 	seed, _ := pterm.DefaultInteractiveTextInput.WithMask("*").Show("Enter your seed")
 	if *showSeed {
@@ -90,6 +104,34 @@ func imageExists(imagePath string) bool {
 		return true
 	}
 	return false
+}
+
+func readWordsFromFile(path string) ([]string, error) {
+	fi, err := os.Stat(path)
+	if err != nil {
+		return nil, fmt.Errorf("cannot access file %s: %w", path, err)
+	}
+	if fi.Size() > maxFileWordsSize {
+		return nil, fmt.Errorf("file %s exceeds maximum size of 1MB", path)
+	}
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, fmt.Errorf("cannot open file %s: %w", path, err)
+	}
+	defer f.Close()
+
+	var words []string
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+		if line != "" {
+			words = append(words, line)
+		}
+	}
+	if err := scanner.Err(); err != nil {
+		return nil, fmt.Errorf("error reading file %s: %w", path, err)
+	}
+	return words, nil
 }
 
 func RemoveWordsByIdx(words []string, rmIdxs []int) []string {
