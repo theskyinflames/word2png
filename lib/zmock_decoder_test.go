@@ -4,8 +4,8 @@
 package lib_test
 
 import (
+	"github.com/theskyinflames/word2png/lib"
 	"sync"
-	"theskyinflames/word2png/lib"
 )
 
 // Ensure, that DecrypterMock does implement lib.Decrypter.
