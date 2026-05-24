@@ -2,8 +2,8 @@
 
 ## Gotchas & Sharp Edges
 
-- ~~**Module path is non-canonical:** `theskyinflames/word2png` (not `github.com/...`). go.mod also contains a self-referencing dependency `github.com/theskyinflames/word2png`. Don't blindly copy this pattern.~~ ✅ Fixed — module path is now `github.com/theskyinflames/word2png`, self-referencing dep removed.
-- **CI Go version is stale:** CI uses `go 1.21`; `go.mod` says `go 1.25.0`. Keep CI in sync if bumping.
+- **Module path is non-canonical:** `theskyinflames/word2png` (not `github.com/...`). go.mod also contains a self-referencing dependency `github.com/theskyinflames/word2png`. Don't blindly copy this pattern.
+- ~~**CI Go version is stale:** CI uses `go 1.21`; `go.mod` says `go 1.25.0`. Keep CI in sync if bumping.~~ ✅ Fixed — CI now uses `go 1.25` to match `go.mod`.
 - **Formatters are enforced:** `gofumpt` + `goimports` run as linters. Run `golangci-lint run` locally (or `make lint`) before pushing — it also verifies `go mod tidy` didn't change anything (`git diff --quiet go.mod go.sum`).
 - **No real-crypto e2e test:** `lib/fixtures_test.go` uses generated mocks (`EncrypterMock`/`DecrypterMock`), so encryption/decryption round-trips are never tested with real AES-256. Don't assume integration coverage exists.
 - **`make generate` vendor dance:** It runs `go mod vendor` before `go generate ./...`, then removes `./vendor`. This may not work if vendor directory is gitignored or has stale contents.
