@@ -6,7 +6,8 @@ install:
 
 build-wasm:
 	mkdir -p ./assets
-	GOOS=js GOARCH=wasm go build -tags wasm -o ./assets/world2png.wasm ./cmd/wasm/main.go
+	GOOS=js GOARCH=wasm go build -tags wasm -o ./assets/word2png.wasm ./cmd/wasm/main.go
+	cp ./assets/word2png.wasm ./assets/world2png.wasm
 
 test:
 	go test -v -race ./...
