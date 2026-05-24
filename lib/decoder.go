@@ -12,7 +12,7 @@ import (
 	"strings"
 )
 
-//go:generate moq -out zmock_decoder_test.go -pkg lib_test . Decrypter
+//go:generate go run github.com/matryer/moq -out zmock_decoder_test.go -pkg lib_test . Decrypter
 
 type Decrypter interface {
 	DecryptWords(encryptedWords [][]byte) ([]string, error)

@@ -10,7 +10,7 @@ import (
 	"io"
 )
 
-//go:generate moq -out zmock_encoder_test.go -pkg lib_test . Encrypter
+//go:generate go run github.com/matryer/moq -out zmock_encoder_test.go -pkg lib_test . Encrypter
 
 type Encrypter interface {
 	EncryptWords(words []string) ([][]byte, error)
