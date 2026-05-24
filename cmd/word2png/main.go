@@ -7,6 +7,7 @@ import (
 
 	"github.com/alecthomas/kingpin/v2"
 	"github.com/pterm/pterm"
+
 	"github.com/theskyinflames/word2png/lib"
 )
 
