@@ -6,7 +6,7 @@
 - ~~**No real-crypto e2e test:** `lib/fixtures_test.go` uses generated mocks (`EncrypterMock`/`DecrypterMock`), so encryption/decryption round-trips are never tested with real AES-256. Don't assume integration coverage exists.~~ ✅ Fixed — `TestRealCryptoEncodingDecodingRoundTrip` in `lib/e2e_test.go` exercises full encode→decode pipeline with real AES-256.
 - **Formatters are enforced:** `gofumpt` + `goimports` run as linters. Run `golangci-lint run` locally (or `make lint`) before pushing — it also verifies `go mod tidy` didn't change anything (`git diff --quiet go.mod go.sum`).
 - ~~**WASM build typo:** `make build-wasm` outputs `assets/world2png.wasm` (missing 'd'). Preserve filename for backward compatibility with `word2pngUI`.~~ ✅ Fixed — now outputs `word2png.wasm` with a copy as `world2png.wasm` for backward compat.
-- **`os.Exit()` + non-standard code:** Both CLIs (`cmd/word2png/`, `cmd/png2word/`) call `os.Exit(-1)` on failure, skipping deferred cleanup. Handle with care.
+- ~~**`os.Exit()` + non-standard code:** Both CLIs (`cmd/word2png/`, `cmd/png2word/`) call `os.Exit(-1)` on failure, skipping deferred cleanup. Handle with care.~~ ✅ Fixed — refactored to `main() -> run() int` pattern so defers fire before exit; replaced `os.Exit(-1)` with standard `os.Exit(1)`.
 - **`cmd/wasm/` excluded from golangci-lint** (see `.golangci.yml` `build-tags: [infra]` and WASM build constraint).
 
 ## Commands Quick Reference
