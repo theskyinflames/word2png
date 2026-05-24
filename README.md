@@ -43,17 +43,17 @@ To get back the words encoded in the above image, the passphrase is needed:
 <img src="doc/decode.png" alt="encoding" style="width:800px;background-color:white;padding:0px"/>
 
 ## How it works - Encoding
-First of all, the provided words are encrypted using AES-256-GCM encryption in a *chain* mode. The encryption key is derived from the passphrase using **Argon2id** (RFC 9106), a memory-hard KDF resistant to GPU/ASIC attacks. A random 16-byte salt is generated for each encryption and prepended to the ciphertext (salt||nonce||encrypted). I mean, except for the first word, which is encrypted using the provided passphrase, the rest of the words are encrypted using the previous encrypted word as a passphrase. 
+First of all, the provided words are encrypted using AES-256 encryption in a *chain* mode. I mean, except for the first word, which is encrypted using the provided passphrase, the rest of the words are encrypted using the previous encrypted word as a passphrase. 
 
 <img src="doc/ic-encryption.png" alt="Words encryption" style="width:400px;background-color:white;padding:10px"/>
 
 It prevents modifying the sequence of words.
 
-Once we have the words encrypted, we need a bijective function to encode the encrypted words in a sequence of colors in the PNG file. But we also want that this relation between each *byte* and its color depended on the passphrase. So if the passphrase changes, this relation will also change. It's achieved by using an Argon2id-derived key from the passphrase. Here, two bijective functions are built, the first one to encode and the second one to decode:
+Once we have the words encrypted, we need a bijective function to encode the encrypted words in a sequence of colors in the PNG file. But we also want that this relation between each *byte* and its color depended on the passphrase. So if the passphrase changes, this relation will also change. It's achieved by using the MD5 checksum of the passphrase. It is a 128 bytes signature length, or in other words, it allows to encode 128 values into 128 colors. Here, two bijective functions are built, the first one to encode and the second one to decode: 
 
 <img src="doc/bijective.png" alt="Words encryption" style="width:400px;background-color:white;padding:10px"/>
 
-But this function only manages values *0 ≥ V ≤ 2^4*, and each byte to encode can take them from 0 to *2^8*. To fix it, each byte is split into two bytes, one of them with the high part and another one with the low part. For example, a byte *10111001* is split into two bytes: *00001011* (high part) and *00001001* (low part). By doing so, we ensure that all bytes to be encoded to colors will have values in the domain of the bijective function.
+But this function only manages values *0 ≥ V ≤ 2^4*, and each byte to encode can take them from 0 to *2^8*. To fix it, each byte is split into two bytes, one of them with the high part and another one with the low part. For example, a byte *10111001* is split into two bytes: *00001011* (high part) and *00001001* (low part). By doing so, we ensure that all bytes to be encoded to colors will have values in the domain of the bijective function. 
 
 ## How it works - decoding
 To decode the sequence of words encoded in a PNG image, it's taken into account that:
