@@ -12,18 +12,17 @@ import (
 )
 
 func main() {
+	os.Exit(run())
+}
+
+func run() int {
 	var (
 		imagePath   = kingpin.Flag("file", "Save to the especified file if it's filled").Short('f').String()
 		words       = kingpin.Flag("words", "list of words to encode").Short('w').Strings()
 		debug       = kingpin.Flag("debug", "writes a debug file").Short('d').Bool()
 		b64         = kingpin.Flag("b64", "b64encoded image").String()
 		removeWords = kingpin.Flag("remove-word", "remove a word from an image by index number").Short('r').Ints()
-
-		// dangerous zone
-		showSeed = kingpin.Flag("show-seed", "shows the entered seed").Short('s').Bool()
-
-		debugFile *os.File
-		err       error
+		showSeed    = kingpin.Flag("show-seed", "shows the entered seed").Short('s').Bool()
 	)
 	kingpin.Parse()
 
@@ -32,54 +31,61 @@ func main() {
 		pterm.DefaultBasicText.Printf("Entered seed: %s\n", pterm.BgYellow.Sprint(pterm.Black(seed)))
 	}
 
+	var debugFile *os.File
 	if debug != nil && *debug {
+		var err error
 		debugFile, err = os.Create("./encrypted-bytes.txt")
-		exitIfError(err)
-		defer func() {
-			debugFile.Close()
-		}()
+		if err != nil {
+			fmt.Printf("ERROR: %s\n", err.Error())
+			return 1
+		}
+		defer debugFile.Close()
 	}
 
 	aes256 := lib.NewAES256(seed)
 
-	// If the image already exists, received words will be appended to the existent ones
 	if (*imagePath != "" && imageExists(*imagePath)) || *b64 != "" {
 		decoder := lib.NewDecoder(lib.Rune2Color(seed), aes256, lib.DecodeDebugWriterOpt(debugFile))
 		beforeWords, err := decoder.DecodeFromSource(*imagePath, *b64)
-		exitIfError(err)
+		if err != nil {
+			fmt.Printf("ERROR: %s\n", err.Error())
+			return 1
+		}
 		*words = append(beforeWords, *words...)
 	}
 
-	// If remove-words flag has been provided, it's applied
 	*words = RemoveWordsByIdx(*words, *removeWords)
 
 	encoder := lib.NewEncoder(lib.Rune2Color(seed), aes256, lib.EncoderDebugWriterOpt(debugFile))
 	b, err := encoder.Encode(*words)
-	exitIfError(err)
+	if err != nil {
+		fmt.Printf("ERROR: %s\n", err.Error())
+		return 1
+	}
 
 	switch {
 	case *imagePath != "":
-		exitIfError(lib.SaveEncodedImage(b, *imagePath))
+		if err := lib.SaveEncodedImage(b, *imagePath); err != nil {
+			fmt.Printf("ERROR: %s\n", err.Error())
+			return 1
+		}
 	default:
 		b64Encoder := base64.NewEncoder(base64.StdEncoding, os.Stdout)
-		_, err = b64Encoder.Write(b)
-		exitIfError(err)
-		exitIfError(b64Encoder.Close())
+		if _, err = b64Encoder.Write(b); err != nil {
+			fmt.Printf("ERROR: %s\n", err.Error())
+			return 1
+		}
+		if err := b64Encoder.Close(); err != nil {
+			fmt.Printf("ERROR: %s\n", err.Error())
+			return 1
+		}
 	}
 
 	fmt.Println("\ncoding process finished")
-	os.Exit(0)
-}
-
-func exitIfError(err error) {
-	if err != nil {
-		fmt.Printf("ERROR: %s\n", err.Error())
-		os.Exit(-1)
-	}
+	return 0
 }
 
 func imageExists(imagePath string) bool {
-	// if error is nil, I guess the file exists
 	if _, err := os.Stat(imagePath); err == nil {
 		return true
 	}
