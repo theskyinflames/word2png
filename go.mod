@@ -1,4 +1,4 @@
-module theskyinflames/word2png
+module github.com/theskyinflames/word2png
 
 go 1.26
 
@@ -8,7 +8,6 @@ require (
 	github.com/alecthomas/kingpin/v2 v2.3.2
 	github.com/pterm/pterm v0.12.69
 	github.com/stretchr/testify v1.8.4
-	github.com/theskyinflames/word2png v0.0.0-20230310162449-716270965f75
 	golang.org/x/crypto v0.52.0
 )
 

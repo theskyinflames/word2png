@@ -103,7 +103,7 @@ formatters:
   settings:
     goimports:
       local-prefixes:
-        - istio.io/
+        - github.com/theskyinflames/word2png/
   exclusions:
     generated: lax
     paths:
