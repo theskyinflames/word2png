@@ -30,7 +30,5 @@ todo:
 	find . -name '*.go' \! -name '*_generated.go' -prune | xargs grep -n TODO
 
 generate:
-	@go mod vendor
-	go generate ./... | true
-	@rm -rf ./vendor
+	go generate ./...
 

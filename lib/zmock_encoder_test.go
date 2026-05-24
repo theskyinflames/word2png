@@ -4,8 +4,8 @@
 package lib_test
 
 import (
-	"github.com/theskyinflames/word2png/lib"
 	"sync"
+	"theskyinflames/word2png/lib"
 )
 
 // Ensure, that EncrypterMock does implement lib.Encrypter.
@@ -14,19 +14,19 @@ var _ lib.Encrypter = &EncrypterMock{}
 
 // EncrypterMock is a mock implementation of lib.Encrypter.
 //
-// 	func TestSomethingThatUsesEncrypter(t *testing.T) {
+//	func TestSomethingThatUsesEncrypter(t *testing.T) {
 //
-// 		// make and configure a mocked lib.Encrypter
-// 		mockedEncrypter := &EncrypterMock{
-// 			EncryptWordsFunc: func(words []string) ([][]byte, error) {
-// 				panic("mock out the EncryptWords method")
-// 			},
-// 		}
+//		// make and configure a mocked lib.Encrypter
+//		mockedEncrypter := &EncrypterMock{
+//			EncryptWordsFunc: func(words []string) ([][]byte, error) {
+//				panic("mock out the EncryptWords method")
+//			},
+//		}
 //
-// 		// use mockedEncrypter in code that requires lib.Encrypter
-// 		// and then make assertions.
+//		// use mockedEncrypter in code that requires lib.Encrypter
+//		// and then make assertions.
 //
-// 	}
+//	}
 type EncrypterMock struct {
 	// EncryptWordsFunc mocks the EncryptWords method.
 	EncryptWordsFunc func(words []string) ([][]byte, error)
@@ -60,7 +60,8 @@ func (mock *EncrypterMock) EncryptWords(words []string) ([][]byte, error) {
 
 // EncryptWordsCalls gets all the calls that were made to EncryptWords.
 // Check the length with:
-//     len(mockedEncrypter.EncryptWordsCalls())
+//
+//	len(mockedEncrypter.EncryptWordsCalls())
 func (mock *EncrypterMock) EncryptWordsCalls() []struct {
 	Words []string
 } {

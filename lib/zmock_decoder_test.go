@@ -4,8 +4,8 @@
 package lib_test
 
 import (
-	"github.com/theskyinflames/word2png/lib"
 	"sync"
+	"theskyinflames/word2png/lib"
 )
 
 // Ensure, that DecrypterMock does implement lib.Decrypter.
@@ -14,19 +14,19 @@ var _ lib.Decrypter = &DecrypterMock{}
 
 // DecrypterMock is a mock implementation of lib.Decrypter.
 //
-// 	func TestSomethingThatUsesDecrypter(t *testing.T) {
+//	func TestSomethingThatUsesDecrypter(t *testing.T) {
 //
-// 		// make and configure a mocked lib.Decrypter
-// 		mockedDecrypter := &DecrypterMock{
-// 			DecryptWordsFunc: func(encryptedWords [][]byte) ([]string, error) {
-// 				panic("mock out the DecryptWords method")
-// 			},
-// 		}
+//		// make and configure a mocked lib.Decrypter
+//		mockedDecrypter := &DecrypterMock{
+//			DecryptWordsFunc: func(encryptedWords [][]byte) ([]string, error) {
+//				panic("mock out the DecryptWords method")
+//			},
+//		}
 //
-// 		// use mockedDecrypter in code that requires lib.Decrypter
-// 		// and then make assertions.
+//		// use mockedDecrypter in code that requires lib.Decrypter
+//		// and then make assertions.
 //
-// 	}
+//	}
 type DecrypterMock struct {
 	// DecryptWordsFunc mocks the DecryptWords method.
 	DecryptWordsFunc func(encryptedWords [][]byte) ([]string, error)
@@ -60,7 +60,8 @@ func (mock *DecrypterMock) DecryptWords(encryptedWords [][]byte) ([]string, erro
 
 // DecryptWordsCalls gets all the calls that were made to DecryptWords.
 // Check the length with:
-//     len(mockedDecrypter.DecryptWordsCalls())
+//
+//	len(mockedDecrypter.DecryptWordsCalls())
 func (mock *DecrypterMock) DecryptWordsCalls() []struct {
 	EncryptedWords [][]byte
 } {
