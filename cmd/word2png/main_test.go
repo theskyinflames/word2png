@@ -11,26 +11,27 @@ import (
 func TestReadWordsFromFile(t *testing.T) {
 	t.Parallel()
 
-	t.Run("reads words from file successfully", func(t *testing.T) {
+	t.Run("reads entire file content as a single word", func(t *testing.T) {
 		dir := t.TempDir()
 		path := filepath.Join(dir, "words.txt")
-		err := os.WriteFile(path, []byte("word1\nword2\nword3\n"), 0644)
+		content := "word1\nword2\nword3"
+		err := os.WriteFile(path, []byte(content), 0o644)
 		require.NoError(t, err)
 
 		words, err := readWordsFromFile(path)
 		require.NoError(t, err)
-		require.Equal(t, []string{"word1", "word2", "word3"}, words)
+		require.Equal(t, []string{content}, words)
 	})
 
-	t.Run("skips empty lines and trims whitespace", func(t *testing.T) {
+	t.Run("trims surrounding whitespace", func(t *testing.T) {
 		dir := t.TempDir()
 		path := filepath.Join(dir, "words.txt")
-		err := os.WriteFile(path, []byte("  word1  \n\nword2\n  \nword3\n"), 0644)
+		err := os.WriteFile(path, []byte("  hello world  \n"), 0o644)
 		require.NoError(t, err)
 
 		words, err := readWordsFromFile(path)
 		require.NoError(t, err)
-		require.Equal(t, []string{"word1", "word2", "word3"}, words)
+		require.Equal(t, []string{"hello world"}, words)
 	})
 
 	t.Run("returns error on non-existent file", func(t *testing.T) {
@@ -42,7 +43,7 @@ func TestReadWordsFromFile(t *testing.T) {
 		dir := t.TempDir()
 		path := filepath.Join(dir, "big.txt")
 		data := make([]byte, maxFileWordsSize+1)
-		err := os.WriteFile(path, data, 0644)
+		err := os.WriteFile(path, data, 0o644)
 		require.NoError(t, err)
 
 		_, err = readWordsFromFile(path)
@@ -52,7 +53,7 @@ func TestReadWordsFromFile(t *testing.T) {
 	t.Run("returns empty slice for empty file", func(t *testing.T) {
 		dir := t.TempDir()
 		path := filepath.Join(dir, "empty.txt")
-		err := os.WriteFile(path, []byte{}, 0644)
+		err := os.WriteFile(path, []byte{}, 0o644)
 		require.NoError(t, err)
 
 		words, err := readWordsFromFile(path)

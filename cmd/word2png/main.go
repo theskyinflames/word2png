@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"encoding/base64"
 	"fmt"
 	"os"
@@ -23,7 +22,7 @@ func run() int {
 	var (
 		imagePath   = kingpin.Flag("file", "Save to the especified file if it's filled").Short('f').String()
 		words       = kingpin.Flag("words", "list of words to encode").Short('w').Strings()
-		fileWords   = kingpin.Flag("file-words", "path to a text file containing words to encode (one per line, max 1MB)").String()
+		fileWords   = kingpin.Flag("file-words", "path to a text file whose content will be encoded as a single word (max 1MB)").String()
 		debug       = kingpin.Flag("debug", "writes a debug file").Short('d').Bool()
 		b64         = kingpin.Flag("b64", "b64encoded image").String()
 		removeWords = kingpin.Flag("remove-word", "remove a word from an image by index number").Short('r').Ints()
@@ -114,24 +113,15 @@ func readWordsFromFile(path string) ([]string, error) {
 	if fi.Size() > maxFileWordsSize {
 		return nil, fmt.Errorf("file %s exceeds maximum size of 1MB", path)
 	}
-	f, err := os.Open(path)
+	content, err := os.ReadFile(path)
 	if err != nil {
-		return nil, fmt.Errorf("cannot open file %s: %w", path, err)
+		return nil, fmt.Errorf("cannot read file %s: %w", path, err)
 	}
-	defer f.Close()
-
-	var words []string
-	scanner := bufio.NewScanner(f)
-	for scanner.Scan() {
-		line := strings.TrimSpace(scanner.Text())
-		if line != "" {
-			words = append(words, line)
-		}
+	trimmed := strings.TrimSpace(string(content))
+	if trimmed == "" {
+		return []string{}, nil
 	}
-	if err := scanner.Err(); err != nil {
-		return nil, fmt.Errorf("error reading file %s: %w", path, err)
-	}
-	return words, nil
+	return []string{trimmed}, nil
 }
 
 func RemoveWordsByIdx(words []string, rmIdxs []int) []string {
